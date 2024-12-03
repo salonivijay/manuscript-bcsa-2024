@@ -1,3 +1,8 @@
+# description -------------------------------------------------------------
+
+# this file contains code for the sensitivity analysis figures 
+# in the main text of the manuscript.(Figure 4 and 6) 
+
 # read data-smoothing.R file ----------------------------------------------
 
 source(here::here("R/data-smoothing.R"))

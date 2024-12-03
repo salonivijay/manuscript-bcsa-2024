@@ -2,7 +2,7 @@
 
 # this file contains code for the figures in the main text of the 
 # manuscript. The code for map (Figure 1), and sensitivity analysis 
-# (Figure 5 and 7) are in separate .R files.
+# (Figure 4 and 6) are in separate .R files.
 
 # load the smooth data ----------------------------------------------------
 

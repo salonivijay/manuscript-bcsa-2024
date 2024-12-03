@@ -1,5 +1,9 @@
 # description -------------------------------------------------------------
 
+# this file contains code for the tables in the main text.
+
+# load the smooth data ----------------------------------------------------
+
 source(here::here("R/data-smoothing.R"))
 
 library(geosphere)

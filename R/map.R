@@ -1,6 +1,9 @@
+# description -------------------------------------------------------------
+
+# this file contains the code for map (Figure 1)
+
 # r packages --------------------------------------------------------------
 
-library(bcsa)
 library(sf)
 library(basemapR)
 library(patchwork)
