@@ -1,5 +1,11 @@
 # description -------------------------------------------------------------
 
+# this file contains code for the figures in the main text of the 
+# manuscript. The code for map (Figure 1), and sensitivity analysis 
+# (Figure 5 and 7) are in separate .R files.
+
+# load the smooth data ----------------------------------------------------
+
 source(here::here("R/data-smoothing.R"))
 
 # r packages --------------------------------------------------------------
@@ -8,22 +14,23 @@ library(patchwork)
 
 # define a common plot theme ----------------------------------------------
 
-
-theme <- theme(axis.text.y   = element_text(size=6),
-               axis.text.x   = element_text(size=6),
-               axis.title.y  = element_text(size=7),
-               axis.title.x  = element_text(size=7),
-               legend.title = element_text(size = 7),# Legend title
-               legend.text = element_text(size = 6),
-               #panel.background = element_rect(fill='transparent'), #transparent panel bg.
-               #plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg.
-               #axis.line = element_line(colour = "black"),
-               panel.border = element_rect(colour = "black", fill=NA, size=0.5),
-               axis.line = element_line(),
-               axis.line.x = element_blank(),
-               axis.line.y = element_blank(),
-               panel.background = element_rect(fill = "white"),
-               plot.margin = margin(0,0,0,0))
+theme <- theme(
+  axis.text.y   = element_text(size=7,
+                               color = "black"),
+  axis.text.x   = element_text(size=7,
+                               color = "black"),
+  axis.title.y  = element_text(size=7),
+  axis.title.x  = element_text(size=7),
+  legend.title = element_text(size = 7),
+  legend.text = element_text(size = 7),
+  panel.border = element_rect(colour = "black", fill=NA, size=0.5),
+  axis.line = element_line(),
+  axis.line.x = element_blank(),
+  axis.line.y = element_blank(),
+  panel.background = element_rect(fill = "white"),
+  plot.margin = margin(0,0,0,0),
+  strip.text = element_text(size = 7)  # This line sets the size of facet labels
+)
 
 # data preparation for figures ----------------------------------------------
 
@@ -102,6 +109,14 @@ scaleFUN0 <- function(x) sprintf("%.0f", x)
 scaleFUN1 <- function(x) sprintf("%.1f", x)
 scaleFUN2 <- function(x) sprintf("%.2f", x)
 
+# Define a color-blind friendly palette
+cb_fill_palette <- c(
+  "#56B4E9",  # Sky Blue
+  "#F0E442",  # Yellow
+  "#CC79A7"   # Reddish Purple
+)
+
+# Updated Boxplot Code
 p_boxplot_mm <- df_monitoring |>
   filter(exp_type == "mobile_monitoring") |>
   mutate(
@@ -124,13 +139,15 @@ p_boxplot_mm <- df_monitoring |>
                                   25, 
                                   by = 5)) +
   coord_cartesian(ylim=c(0, 25)) +
-  labs(y = expression("eBC concentration ("*µ*"g/m"^3*")"),
+  scale_fill_manual(values = cb_fill_palette) +  # Apply the color-blind palette
+  labs(y = expression("eBC concentration (µg m"^-3*")"),
        x = "Location",
        fill = "Type of location") +
   theme +
   theme(axis.text.x = 
           element_text(angle = 45, 
                        hjust=1))
+
 
 
 # Figure 3: Source apportionment mobile monitoring ------------------------
@@ -162,14 +179,13 @@ p_func_sa_cluster <- function(data) {
                   ymin = 0, 
                   fill = aae_range)) +
     geom_rect(color = "black",
-              size = 0.5) +
-    scale_fill_manual(values = c("ff" = "#00BFC4", 
-                                 "Mixed" = "#00BA38", 
-                                 "bb" = "#F8766D")) +
+              size = 0.3) +
+    scale_fill_manual(values = c("ff" = "#00BFC4",
+                                 "Mixed" = "#A3A500", 
+                                 "bb" = "#D55E00")) +
     labs(x = "Percentage of observations (%)", 
-         y = expression("Mean eBC concentration ("*µ*"g/m"^3*")"), 
+         y = expression("eBC concentration (µg m"^-3*")"), 
          fill = "Source") +
-    theme_bw() +
     scale_y_continuous(position = "right") +
     theme(
       axis.title.y.right = element_text(margin = margin(0, 0, 0, 1)),
@@ -177,10 +193,7 @@ p_func_sa_cluster <- function(data) {
       axis.ticks.y.left = element_blank(),
       strip.background.y = element_blank(), 
       strip.text.y.left = element_text(angle = 0, 
-                                       hjust = 0.5, 
-                                       size = 7),
-      strip.text.x = element_text(size = 7) # Remove boxes around facet titles
-    ) +
+                                       hjust = 0.5)) +
     theme +
     facet_grid(settlement_id ~ day_type, switch = "y")
   
@@ -210,25 +223,28 @@ p_func_wt_avg <- function(df) {
     ggplot(aes(x = wt_percent, 
                y = fct_rev(settlement_id), 
                fill = aae_range)) +
-    geom_bar(stat = "identity", width = 0.5, color = "black") +
+    geom_bar(stat = "identity", 
+             width = 0.5, 
+             color = "black", 
+             size = 0.3) +
     geom_text(aes(label = scaleFUN0(wt_percent)), 
-              size = 11/.pt, 
+              size = 7/.pt, 
               position = position_stack(vjust = 0.5)) +
-    scale_fill_manual(values = c("bb" = "#F8766D", "Mixed" = "#00BA38", "ff" = "#00BFC4")) +
-    labs(x = "Percentage of wt. average eBC concentration (%)",
+    scale_fill_manual(values = c("bb" = "#D55E00", 
+                                 "Mixed" = "#A3A500", 
+                                 "ff" = "#00BFC4")) +
+    labs(x = "Percentage contribution to eBC (%)",
          fill = "Source") +
-    theme_bw(base_size = 10) +  # Set base font size to 12 +
-    # ggtitle("Location") +
-    # theme(plot.title = element_text(hjust = -0.8, vjust = -5)) +
+    theme_bw() +  
+    theme +
     theme(panel.grid.major.y = element_blank(),
           #axis.text.y = element_text(hjust = 0.5, vjust = 0.5),
-          axis.title.y = element_blank()) +
-    theme +
+          axis.title.y = element_blank(),
+          legend.key.size = unit(0.8, "lines")) +
     guides(fill = guide_legend(reverse = TRUE))
   
   return(p)
 }
-
 
 # Figure 3: Source apportionment mobile monitoring ------------------------
 
@@ -275,7 +291,6 @@ p_wt_avg_mm <- p_wt_avg_mm_formal  + p_wt_avg_mm_informal +
   plot_layout(guides = "collect") &
   theme(legend.position = "bottom")
 
-
 # Figure 4: Sensitivity analysis mobile monitoring ------------------------
 
 
@@ -295,18 +310,22 @@ p_wt_avg_sm <- p_func_wt_avg(df_aae_range_sm) +
 
 # Figure 7: Diurnal pattern of eBC ----------------------------------------
 
+# Define colorblind-friendly colors
+color1 <- "#E69F00"  # Orange
+color2 <- "#56B4E9"  # Light blue
+
 p_diurnal <- confidence_intervals |>
   ggplot(aes(x = hour)) +
-  geom_line(aes(y = mean_ir), color = "#003366") +
+  geom_line(aes(y = mean_ir), color = color1) +
   geom_ribbon(aes(ymin = lower_ci_ir,
                   ymax = upper_ci_ir),
-              fill = "#003366",
+              fill = color1,
               alpha = 0.3) +
-  geom_line(aes(y = mean*3.5), color = "red") +
+  geom_line(aes(y = mean*3.5), color = color2) +
   geom_ribbon(aes(ymin = lower_ci*3.5, ymax = upper_ci*3.5),
-              fill = "red", alpha = 0.3) +
+              fill = color2, alpha = 0.3) +
   scale_y_continuous(
-    name = expression("eBC concentration ("*µ*"g/m"^3*")"),
+    name = expression("eBC concentration (µg m"^-3*")"),
     sec.axis = sec_axis(~./3.500, 
                         name="AAE values (470/880 nm)",
                         breaks = seq(0, 3, by = 0.5)),
@@ -314,47 +333,64 @@ p_diurnal <- confidence_intervals |>
   scale_x_continuous(breaks = seq(0, 24, by = 4)) +
   facet_wrap(~settlement_id) +
   theme(legend.position = "none",
-        axis.line.y.left = element_line(color = "#003366"),
-        axis.line.y.right = element_line(color = "red"),
-        axis.title.y.left = element_text(color = "#003366"),
-        axis.title.y.right = element_text(color = "red"),
-        axis.text.y.left = element_text(color = "#003366"),
-        axis.text.y.right = element_text(color = "red"),
-        axis.ticks.y.left = element_line(color = "#003366"),
-        axis.ticks.y.right = element_line(color = "red")) +
+        axis.line.y.left = element_line(color = color1),
+        axis.line.y.right = element_line(color = color2),
+        axis.title.y.left = element_text(color = color1),
+        axis.title.y.right = element_text(color = color2),
+        axis.text.y.left = element_text(color = color1),
+        axis.text.y.right = element_text(color = color2),
+        axis.ticks.y.left = element_line(color = color1),
+        axis.ticks.y.right = element_line(color = color2)) +
   theme
 
 
 # Save figures ------------------------------------------------------------
 
+# Save Figure 7
+ggsave("figures/p_boxplot_mm.jpeg", 
+       plot = p_boxplot_mm,  # your plot object
+       width = 12.7,                            # Width in cm for single-column (3.5 inches)
+       height = 8,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+       units = "cm") # Units for width and height
+
 ggsave(
-  filename = "p_mm_sa.tiff", 
+  filename = "figures/p_mm_sa.jpeg", 
   plot = p_mm_sa,                        # The ggplot object
   width = 12.7,                            # Width in cm for single-column (3.5 inches)
-  height = 6,                           # Height in cm (can be adjusted as needed)
+  height = 7,                           # Height in cm (can be adjusted as needed)
   dpi = 300,
   units = "cm", # Units for width and height
 )
 
-ggsave("p_wt_avg_mm.tiff", 
+ggsave("figures/p_wt_avg_mm.jpeg", 
        plot = p_wt_avg_mm,  # your plot object
        width = 12.7,                            # Width in cm for single-column (3.5 inches)
-       height = 14,                           # Height in cm (can be adjusted as needed)
+       height = 5,                           # Height in cm (can be adjusted as needed)
        dpi = 300,
        units = "cm") # Units for width and height
 
-ggsave("p_sm_sa_cluster.tiff", 
+ggsave("figures/p_sm_sa_cluster.jpeg", 
        plot = p_sm_sa_cluster,  # your plot object
        width = 8.9,                            # Width in cm for single-column (3.5 inches)
-       height = 14,                           # Height in cm (can be adjusted as needed)
+       height = 6,                           # Height in cm (can be adjusted as needed)
        dpi = 300,
        units = "cm") # Units for width and height
 
 
-ggsave("p_wt_avg_sm.tiff", 
+ggsave("figures/p_wt_avg_sm.jpeg", 
        plot = p_wt_avg_sm,  # your plot object
        width = 8.9,                            # Width in cm for single-column (3.5 inches)
-       height = 14,                           # Height in cm (can be adjusted as needed)
+       height = 5,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+       units = "cm") # Units for width and height
+
+
+# Save Figure 7
+ggsave("figures/p_diurnal.jpeg", 
+       plot = p_diurnal,  # your plot object
+       width = 8.9,                            # Width in cm for single-column (3.5 inches)
+       height = 5,                           # Height in cm (can be adjusted as needed)
        dpi = 300,
        units = "cm") # Units for width and height
 

@@ -186,16 +186,16 @@ p_map_routes <- ggplot() +
         strip.text = element_text(size = 13),
         legend.position = "none")
 
-ggsave("p_map_routes.jpeg",
+ggsave("figures/p_map_routes.jpeg",
        plot = p_map_routes,
        width = 8.9,
        height = 6,
        dpi = 300
 )
 
-ggsave("p_map_study.jpeg",
+ggsave("figures/p_map_study.jpeg",
        plot = p_map_study,
        width = 8.9,
-       height = 6.0,                           # Height in cm (can be adjusted as needed)
+       height = 5,                           # Height in cm (can be adjusted as needed)
        dpi = 300,
 )
