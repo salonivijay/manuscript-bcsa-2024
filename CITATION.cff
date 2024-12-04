@@ -9,6 +9,7 @@ type: software
 license: CC-BY-4.0
 title: 'manuscript-bcsa-2024: Data analysis code for manuscript on "Light Absorbing Carbonaceous Aerosols: Concentrations and Sources in an Under-Monitored Setting"'
 version: 0.0.1
+doi: https://doi.org/10.5281/zenodo.14278615
 authors:
 - family-names: Vijay
   given-names: Saloni
