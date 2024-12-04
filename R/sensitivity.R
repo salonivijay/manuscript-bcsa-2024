@@ -9,7 +9,9 @@ source(here::here("R/data-smoothing.R"))
 
 theme_sens <- theme(axis.text.y   = element_text(size=10,
                                                  color = "black"),
-               axis.text.x   = element_text(size=10, angle = 45, hjust = 1,
+               axis.text.x   = element_text(size=10, 
+                                            angle = 45, 
+                                            hjust = 1,
                                             color = "black"),
                axis.title.y  = element_text(size=13),
                axis.title.x  = element_text(size=13),
@@ -18,7 +20,9 @@ theme_sens <- theme(axis.text.y   = element_text(size=10,
                #panel.background = element_rect(fill='transparent'), #transparent panel bg.
                #plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg.
                #axis.line = element_line(colour = "black"),
-               panel.border = element_rect(colour = "black", fill=NA, size=0.5),
+               panel.border = element_rect(colour = "black", 
+                                           fill=NA, 
+                                           size=0.5),
                axis.line = element_line(),
                axis.line.x = element_blank(),
                axis.line.y = element_blank(),

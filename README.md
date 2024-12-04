@@ -5,7 +5,6 @@
 [![License: CC BY
 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![R-CMD-check](https://github.com/Global-Health-Engineering/bcsa/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Global-Health-Engineering/bcsa/actions/workflows/R-CMD-check.yaml)
-[![DOI](https://zenodo.org/badge/686992598.svg)](https://zenodo.org/doi/10.5281/zenodo.10878607)
 <!-- badges: end -->
 
 ## manuscript-bcsa-2024: “Light Absorbing Carbonaceous Aerosols: Concentrations and Sources in an Under-Monitored Setting”
