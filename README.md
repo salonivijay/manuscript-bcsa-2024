@@ -28,3 +28,21 @@ contained in this repo in \[data/processed-data/\].
 ## Figures
 
 Figures in this manuscript are color blind compatible
+
+## Files
+
+### R scripts in R folder
+
+data-smoothing.R - contains code to smooth the raw data taken from the
+bcsa package
+
+map.R - contains code for figure 1
+
+figures-main.R - contains code for figure 2-3, 5, and 7
+
+sensitivity.R - contains code for figure 4 and 6
+
+tables.R - contains code for all the tables
+
+appendix.R - contains code for all the tables and figures in the
+appendix
