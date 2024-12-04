@@ -13,11 +13,9 @@ library(broom)
 
 # read files --------------------------------------------------------------
 
-
-table_bc_literature <- read_csv(here::here("data/bc-lit-rev.csv"), 
+table_bc_literature <- read_csv(here::here("data/raw-data/bc-lit-rev.csv"), 
                                 locale = readr::locale(encoding = "latin1"),
                                 col_types = "cccc")
-
 
 # Table 1: Distance travelled during mobile monitoring --------------------
 

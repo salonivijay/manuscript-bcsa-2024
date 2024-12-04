@@ -1,0 +1,39 @@
+# --------------------------------------------
+# CITATION file created with {cffr} R package
+# See also: https://docs.ropensci.org/cffr/
+# --------------------------------------------
+ 
+cff-version: 1.2.0
+message: 'To cite package "manuscript-bcsa-2024" in publications use:'
+type: software
+license: CC-BY-4.0
+title: 'manuscript-bcsa-2024: Data analysis code for manuscript on "Light Absorbing Carbonaceous Aerosols: Concentrations and Sources in an Under-Monitored Setting"'
+version: 0.0.1
+doi: 
+abstract: The manuscript-bcsa-2024 package provide code for data analysis for the manuscript on "Light Absorbing Carbonaceous Aerosols: Concentrations and Sources in an Under-Monitored Setting". The package contains code for generating all the figures and tables in the main text and appendix. The data used in the manuscript is published as a separate R 
+package called bcsa (Vijay, S., Chilunga, H. K., Khonje, L., Kajombo, J., Tilley, E., & Schöbitz, L. (2024). bcsa: Data for source-apportionment of light absorbing carbon in Blantyre, Malawi (v0.1.0). Zenodo. https://doi.org/10.5281/zenodo.12685803). 
+manuscript-bcsa-2024 only contains the analysis code for the bcsa data. 
+  This study used the MA200 micro-aethalometer to measure the LAC concentrations.The MA200 measures the LAC concentrations in real-time at five different wavelengths, that allows for source apportionment.
+  We used a novel clustering approach for source apportionment. The 
+clustering approach is explained in detail in another manuscript "Vijay, S., Schöbitz, L., Chilunga, H.K., Tilley, E. (2024). Absorption Ångström Exponent Values to Identify Light-absorbing Carbonaceous Aerosol Sources in Blantyre, Malawi. Aerosol Air Qual. Res. 24, 240095. https://doi.org/10.4209/aaqr.240095".
+
+authors:
+- family-names: Vijay
+  given-names: Saloni
+  email: svijay@ethz.ch
+  orcid: https://orcid.org/0000-0001-5883-5308
+- family-names: Tilley
+  given-names: Elizabeth
+  email: tilleye@ethz.ch
+  orcid: https://orcid.org/0000-0002-2095-9724
+- family-names: Schöbitz
+  given-names: Lars
+  email: lschoebitz@ethz.ch
+  orcid: https://orcid.org/0000-0003-2196-5015
+date-released: '2024-12-04'
+contact:
+- family-names: Vijay
+  given-names: Saloni
+  email: svijay@ethz.ch
+  orcid: https://orcid.org/0000-0001-5883-5308
+

@@ -3,6 +3,10 @@
 .RData
 .Ruserdata
 
+data/raw-data/df_met.rda
+
+data/raw_data/meteorology/
+
 data/df_met.rda
 
 data/meteorology/

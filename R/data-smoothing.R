@@ -13,7 +13,7 @@ library(bcsa)
 library(dplyr)
 library(tidyverse)
 
-parameters <- read_csv(here::here("data/MA200-parameters.csv"))
+parameters <- read_csv(here::here("data/raw-data/MA200-parameters.csv"))
 
 ## all monitoring data used in the manuscript
 

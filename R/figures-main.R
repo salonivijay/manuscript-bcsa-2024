@@ -116,13 +116,19 @@ cb_fill_palette <- c(
   "#CC79A7"   # Reddish Purple
 )
 
-# Updated Boxplot Code
-p_boxplot_mm <- df_monitoring |>
+fig02_mm_boxplot <- df_monitoring |>
   filter(exp_type == "mobile_monitoring") |>
   mutate(
     settlement_id = factor(settlement_id, levels = settlements_vec),
-    type_of_settlement = factor(type_of_settlement, levels = settlement_types_order)
-  ) |>
+    type_of_settlement = factor(type_of_settlement, 
+                                levels = settlement_types_order)
+  ) 
+
+fig02_mm_boxplot %>% 
+write_csv(here::here("data/processed-data/fig02_mm_boxplot.csv"))
+
+# Boxplot Code
+p_boxplot_mm <- fig02_mm_boxplot |>
   ggplot(aes(x = settlement_id, 
              y = ir_bcc, 
              fill = type_of_settlement)) +
@@ -147,7 +153,6 @@ p_boxplot_mm <- df_monitoring |>
   theme(axis.text.x = 
           element_text(angle = 45, 
                        hjust=1))
-
 
 
 # Figure 3: Source apportionment mobile monitoring ------------------------
@@ -197,7 +202,7 @@ p_func_sa_cluster <- function(data) {
     theme +
     facet_grid(settlement_id ~ day_type, switch = "y")
   
-  return(p)
+  return(list(plot = p, data = df_cluster))
 }
 
 # function for figures of weighted average using clustering method
@@ -243,42 +248,68 @@ p_func_wt_avg <- function(df) {
           legend.key.size = unit(0.8, "lines")) +
     guides(fill = guide_legend(reverse = TRUE))
   
-  return(p)
+  return(list(plot = p, data = data))
 }
 
-# Figure 3: Source apportionment mobile monitoring ------------------------
+result_sa_cluster_formal <- p_func_sa_cluster(df_aae_overview %>% 
+                              filter(type_of_settlement == "Formal",
+                                     !settlement_id %in% "Highways",
+                                     exp_type == "mobile_monitoring")) 
 
 # Figure 3 (a): clustering formal settlements
 
-p_mm_sa_cluster_formal <- p_func_sa_cluster(df_aae_overview |> 
-                                              filter(type_of_settlement == "Formal",
-                                                     !settlement_id %in% "Highways",
-                                                     exp_type == "mobile_monitoring")) + 
+p_mm_sa_cluster_formal <- result_sa_cluster_formal$plot + 
   theme(legend.position = "none")
+
+fig03_a_cluster_formal <- result_sa_cluster_formal$data
+
+fig03_a_cluster_formal %>% 
+  write_csv(here::here("data/processed-data/fig03_a_cluster_formal.csv"))
 
 # Figure 3 (b): clustering informal settlements
 
-p_mm_sa_cluster_informal <- p_func_sa_cluster(df_aae_overview |> 
+result_sa_cluster_informal <- p_func_sa_cluster(df_aae_overview |> 
                                                 filter(type_of_settlement == "Informal",
                                                        !settlement_id %in% "Highways",
-                                                       exp_type == "mobile_monitoring")) + 
+                                                       exp_type == "mobile_monitoring")) 
+
+p_mm_sa_cluster_informal <- result_sa_cluster_informal$plot + 
   theme(legend.position = "none")
+
+fig03_b_cluster_informal <- result_sa_cluster_informal$data
+
+fig03_b_cluster_informal %>% 
+  write_csv(here::here("data/processed-data/fig03_b_cluster_informal.csv"))
 
 # Figure 3 (c): weighted average formal settlements
 
-p_wt_avg_mm_formal <- p_func_wt_avg(df_aae_range %>% 
+result_wt_avg_mm_formal <- p_func_wt_avg(df_aae_range %>% 
                                       filter(exp_type == "mobile_monitoring",
                                              type_of_settlement == "Formal",
-                                             !settlement_id %in% "Highways")) + 
+                                             !settlement_id %in% "Highways"))
+
+p_wt_avg_mm_formal <- result_wt_avg_mm_formal$plot + 
   theme(legend.position = "none")
+
+fig03_c_wt_avg_formal <- result_wt_avg_mm_formal$data
+
+fig03_c_wt_avg_formal %>% 
+  write_csv(here::here("data/processed-data/fig03_c_wt_avg_formal.csv"))
 
 # Figure 3 (d): weighted average informal settlements
 
-p_wt_avg_mm_informal <- p_func_wt_avg(df_aae_range %>% 
+result_wt_avg_mm_informal <- p_func_wt_avg(df_aae_range %>% 
                                         filter(exp_type == "mobile_monitoring",
                                                type_of_settlement == "Informal",
-                                               !settlement_id %in% "Highways")) + 
+                                               !settlement_id %in% "Highways")) 
+
+p_wt_avg_mm_informal <- result_wt_avg_mm_informal$plot + 
   theme(legend.position = "none")
+
+fig03_d_wt_avg_informal <- result_wt_avg_mm_informal$data
+
+fig03_d_wt_avg_informal %>% 
+  write_csv(here::here("data/processed-data/fig03_d_wt_avg_informal.csv"))
 
 # Figure 3 (a) + Figure 3 (b) 
 
@@ -293,26 +324,43 @@ p_wt_avg_mm <- p_wt_avg_mm_formal  + p_wt_avg_mm_informal +
 
 # Figure 4: Sensitivity analysis mobile monitoring ------------------------
 
-
+# see sensitivity.R file
 
 # Figure 5: Source apportionment stationary monitoring --------------------
 
 # Figure 5 (a): clustering stationary monitoring
 
-p_sm_sa_cluster <- p_func_sa_cluster(df_aae_overview %>% 
-                                       filter(exp_type == "stationary_monitoring")) +
+result_sm_sa_cluster <- p_func_sa_cluster(df_aae_overview %>% 
+                                       filter(exp_type == "stationary_monitoring")) 
+
+p_sm_sa_cluster <- result_sm_sa_cluster$plot + 
   theme(legend.position = "none")
+
+fig05_a_sm_cluster <- result_sm_sa_cluster$data
+
+fig05_a_sm_cluster %>% 
+  write_csv(here::here("data/processed-data/fig05_a_sm_cluster.csv"))
 
 # Figure 5 (b): weighted average stationary monitoring
 
-p_wt_avg_sm <- p_func_wt_avg(df_aae_range_sm) +
+result_wt_avg_sm <- p_func_wt_avg(df_aae_range_sm) 
+
+p_wt_avg_sm <- result_wt_avg_sm$plot +
   theme(legend.position = "bottom")
+
+fig05_b_sm_wt_avg <- result_wt_avg_sm$data
+
+fig05_b_sm_wt_avg %>% 
+  write_csv(here::here("data/processed-data/fig05_b_sm_wt_avg.csv"))
 
 # Figure 7: Diurnal pattern of eBC ----------------------------------------
 
 # Define colorblind-friendly colors
 color1 <- "#E69F00"  # Orange
 color2 <- "#56B4E9"  # Light blue
+
+confidence_intervals %>% 
+  write_csv(here::here("data/processed-data/fig07_diurnal_pattern.csv"))
 
 p_diurnal <- confidence_intervals |>
   ggplot(aes(x = hour)) +

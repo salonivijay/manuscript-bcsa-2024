@@ -25,7 +25,11 @@ theme_sens <- theme(axis.text.y   = element_text(size=10,
                panel.background = element_rect(fill = "white"),
                plot.margin = margin(0,0,0,0),
                legend.position = "bottom",
-               legend.margin = margin(t = -2, r = 0, b = 0, l = 0, unit = "pt"),
+               legend.margin = margin(t = -2, 
+                                      r = 0, 
+                                      b = 0, 
+                                      l = 0, 
+                                      unit = "pt"),
                strip.text = element_text(size = 13))
 
 func_sensitivity <- function(df, threshold1, threshold2) {
@@ -124,7 +128,7 @@ calculate_difference <- function(data, ref_threshold1, ref_threshold2) {
 }
 
 # Calculate differences from reference point (1.29, 1.63)
-sensitivity_diff <- sensitivity_long %>%
+fig04_mm_sensitivity <- sensitivity_long %>%
   group_by(settlement_id, category) %>%
   group_modify(~calculate_difference(.x, 1.29, 1.63)) %>%
   ungroup()
@@ -138,7 +142,7 @@ category_labels <- c(
 
 
 # Create heat maps
-p_sensitivity_mm <- ggplot(sensitivity_diff, aes(x = threshold1, y = threshold2, fill = difference)) +
+p_sensitivity_mm <- ggplot(fig04_mm_sensitivity, aes(x = threshold1, y = threshold2, fill = difference)) +
   geom_tile() +
   #geom_text(aes(label = round(difference, 0)), color = "black", size = 3) +
   facet_grid(settlement_id ~ category, labeller = labeller(category = category_labels)) +
@@ -186,13 +190,22 @@ calculate_difference <- function(data, ref_threshold1, ref_threshold2) {
 }
 
 # Calculate differences from reference point (1.29, 1.63)
-sensitivity_diff_sm <- sensitivity_long_sm %>%
+fig06_sm_sensitivity <- sensitivity_long_sm %>%
   group_by(settlement_id, category) %>%
   group_modify(~calculate_difference(.x, 1.29, 1.63)) %>%
   ungroup()
 
+
+# write csv files for data behind the figures -----------------------------
+
+fig04_mm_sensitivity %>% 
+  write_csv(here::here("data/processed-data/fig04_mm_sensitivity.csv"))
+
+fig06_sm_sensitivity %>% 
+  write_csv(here::here("data/processed-data/fig06_sm_sensitivity.csv"))
+
 # Create heat maps
-p_sensitivity_sm <- ggplot(sensitivity_diff_sm, 
+p_sensitivity_sm <- ggplot(fig06_sm_sensitivity, 
                            aes(x = threshold1, 
                                y = threshold2, 
                                fill = difference)) +

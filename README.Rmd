@@ -1,0 +1,359 @@
+---
+output: github_document
+always_allow_html: true
+editor_options: 
+  chunk_output_type: console
+  markdown: 
+    wrap: 72
+execute:
+  echo: false
+  message: false
+  warning: false
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%",
+  message = FALSE,
+  warning = FALSE,
+  fig.retina = 2,
+  fig.align = 'center'
+)
+
+library(tidyverse)
+library(bcsa)
+```
+
+# bcsa
+
+<!-- badges: start -->
+[![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
+[![R-CMD-check](https://github.com/Global-Health-Engineering/bcsa/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Global-Health-Engineering/bcsa/actions/workflows/R-CMD-check.yaml)
+[![DOI](https://zenodo.org/badge/686992598.svg)](https://zenodo.org/doi/10.5281/zenodo.10878607)
+<!-- badges: end -->
+
+
+
+The goal of `bcsa` is to provide datasets for source apportionment of
+light absorbing carbon (LAC) in Blantyre, Malawi. This package combines
+datasets collected as part of two projects. The first project is on
+determining Absorption Angstrom Exponent (AAE) values of local pollution
+sources in Blantyre, Malawi. AAE values can be used to differentiate the
+LAC from fossil fuel and biomass based sources. The second project is to
+determine the light absorbing carbon concentrations by mobile, personal
+and stationary monitoring in Blantyre.
+
+The package includes the following seven datasets:
+
+1.  `df_aae`: Data of experiments to determine AAE values
+2.  `df_mm`: Mobile monitoring data in eight settlements
+3.  `df_mm_road_type`: Mobile monitoring data classified by highways (main_road) and
+    non-highways (non_main_roads) in eight settlements
+4.  `df_pm`: Personal monitoring data in four settlements
+5.  `df_pm_trips`: Data on times when open waste burning was observed during the
+    personal monitoring
+6.  `df_sm`: Raw data from stationary monitoring in two settlements
+7.  `df_collocation`: Data when the two LAC monitors are placed and run next to each other
+    to check data quality
+
+This study used the MA200 micro-aethalometer to measure the light
+absorbing carbon (LAC) concentrations. The MA200 measures the LAC
+concentrations in real-time at five different wavelengths, that allows
+for source apportionment.
+
+## Installation
+
+You can install the development version of bcsa from
+[GitHub](https://github.com/) with:
+
+```{r installation, eval=FALSE, echo=TRUE}
+# install.packages("devtools")
+devtools::install_github("Global-Health-Engineering/bcsa")
+```
+
+Alternatively, you can download the individual datasets as a CSV or XLSX
+file from the table below.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+extdata_path <- "https://github.com/Global-Health-Engineering/bcsa/raw/main/inst/extdata/"
+
+read_csv("data-raw/dictionary.csv") |> 
+  distinct(file_name) |> 
+  dplyr::mutate(file_name = str_remove(file_name, ".rda")) |> 
+  dplyr::rename(dataset = file_name) |> 
+  mutate(
+    CSV = paste0("[Download CSV](", extdata_path, dataset, ".csv)"),
+    XLSX = paste0("[Download XLSX](", extdata_path, dataset, ".xlsx)")
+  ) |> 
+  knitr::kable()
+
+```
+
+# Datasets
+
+This data package has seven datasets: `df_aae` `df_mm` `df_mm_road_type`
+`df_pm` `df_pm_trips` `df_sm` `df_collocation`
+
+## df_aae
+
+This dataset contains data from experiments to determine AAE values of
+local pollution sources in Blantyre, Malawi.
+
+- Vehicular emission
+- Waste Burning (Plastics)
+- Waste Burning (Plastic-based textiles, e.g., polyester)
+- Waste Burning (Garden Waste)
+- Waste Burning (Cardboard and Paper)
+- Mixed waste burning
+- Cooking (Using Solid Biofuels - Wood, Charcoal, Briquettes)
+
+All the data mentioned above were collected over 17 days, from 16th May
+to 1st June, 2023.
+
+Vehicular emissions: three diesel pick-up trucks were sampled. The
+exhaust was monitored by the MA200, positioned approximately 3 meters
+from the vehicle’s exhaust, after the vehicle engine was started.
+Monitoring was conducted for 20 minutes. Also, mobile monitoring was
+carried out on three heavily trafficked roads during peak traffic hours,
+with a duration of 20 minutes on each road.
+
+Open waste burning emissions (individual components burning): various
+waste components (plastics, textiles, cardboard and paper, wood, and
+leaves) were burned in a semi-open guard shelter. The shelter, covered
+on three sides and open on one side, allowed for burning at the edge of
+the open side. The MA200 monitor was positioned at a 3-meter distance
+from the open side, with the micro-cyclone attached to MA200 placed 1.5
+meters above the ground. The amount of waste components burned was
+carefully determined through trial and error, ensuring concentrations
+remained within desired levels while burning for a sufficient duration.
+A consistent 20-minute burning duration was chosen to align with vehicle
+monitoring. Each waste type was burned in three replicates, with a
+minimum half-an-hour gap between each experiment, during which the
+shelter was ventilated.
+
+Mixed waste burning: six known mixed waste dumps across the city were
+monitored, each for a 20-minute duration.
+
+Cooking emissions: the MA200 was placed at a guardian shelter in Queens,
+known for using firewood for cooking. The micro-cyclone was positioned
+1.5 meters above the ground and 3 meters from the front windows section
+of the shelter. Sampling was conducted for 20 minutes on three days
+during peak cooking times.
+
+```{r}
+library(bcsa)
+```
+
+The `df_aae` data set has `r ncol(df_aae)` variables and
+`r nrow(df_aae)` observations. For an overview of the variable names,
+see the following table.
+
+```{r, eval=TRUE}
+df_aae |> 
+  head() |> 
+  gt::gt() |>
+  gt::as_raw_html()
+```
+
+```{r, echo=FALSE}
+readr::read_csv("data-raw/dictionary.csv") |> 
+  dplyr::filter(file_name == "df_aae.rda") |> 
+  dplyr::select(variable_name:description) |> 
+  knitr::kable() |> 
+  kableExtra::kable_styling() |> 
+  kableExtra::scroll_box(height = "400px")
+```
+
+## df_mm
+
+Mobile monitoring data in eight settlements in Blantyre, Malawi. The
+data was collected from eight settlements (four planned and four
+unplanned settlements.
+
+Mobile monitoring utilised a vehicle equipped with a portable MA200
+instrument. The micro-cyclone was positioned outside the car’s front
+window at an elevation of 1.5 meters above the ground. The vehicle was
+driven at a speed of less than 20 km/h.
+
+The monitoring took place from 3rd May to 14th May, 2023, covering both
+weekdays and weekends.
+
+The `df_mm` data set has `r ncol(df_mm)` variables and `r nrow(df_mm)`
+observations. For an overview of the variable names, see the following
+table.
+
+```{r, eval=TRUE}
+df_mm |> 
+  head() |> 
+  gt::gt() |>
+  gt::as_raw_html()
+```
+
+```{r, echo=FALSE}
+readr::read_csv("data-raw/dictionary.csv") |> 
+  dplyr::filter(file_name == "df_mm.rda") |> 
+  dplyr::select(variable_name:description) |> 
+  knitr::kable() |> 
+  kableExtra::kable_styling() |> 
+  kableExtra::scroll_box(height = "400px")
+```
+
+## df_mm_road_type
+
+This dataset is collected during mobile monitoring and is the same as
+`df_mm`, except that the highways and non-highways are demarcated in
+this dataset.
+
+The `df_mm_road_type` data set has `r ncol(df_mm_road_type)` variables
+and `r nrow(df_mm_road_type)` observations. For an overview of the
+variable names, see the following table.
+
+```{r, eval=TRUE}
+df_mm_road_type |> 
+  head() |> 
+  gt::gt() |>
+  gt::as_raw_html()
+```
+
+```{r, echo=FALSE}
+readr::read_csv("data-raw/dictionary.csv") |> 
+  dplyr::filter(file_name == "df_mm_road_type.rda") |> 
+  dplyr::select(variable_name:description) |> 
+  knitr::kable() |> 
+  kableExtra::kable_styling() |> 
+  kableExtra::scroll_box(height = "400px")
+```
+
+## df_pm
+
+Personal monitoring data in four unplanned settlements in Blantyre,
+Malawi, covering the areas inaccesible by vehicles due to narrow and
+undefined unpaved roads.
+
+For personal mobile monitoring, an individual carried the monitoring
+equipment and conducted on-foot surveys within the informal settlements.
+The micro-cyclone was attached at the collar of the person.
+
+This method was implemented twice in each settlement, from 9:00 a.m. to
+11:30 a.m. and from 2:00 p.m. to 4:30 p.m., between the 19th to 25th of
+May, 2023, covering weekdays.
+
+The `df_pm` data set has `r ncol(df_pm)` variables and `r nrow(df_pm)`
+observations. For an overview of the variable names, see the following
+table.
+
+```{r, eval=TRUE}
+df_pm |> 
+  head() |> 
+  gt::gt() |>
+  gt::as_raw_html()
+```
+
+```{r, echo=FALSE}
+readr::read_csv("data-raw/dictionary.csv") |> 
+  dplyr::filter(file_name == "df_pm.rda") |> 
+  dplyr::select(variable_name:description) |> 
+  knitr::kable() |> 
+  kableExtra::kable_styling() |> 
+  kableExtra::scroll_box(height = "400px")
+```
+
+## df_pm_trips
+
+While conducting the personal monitoring, the individual also recorded
+the times when the open waste burning. The times when the individual observed the burning events is given in this dataset.
+
+The `df_pm_trips` data set has `r ncol(df_pm_trips)` variables and
+`r nrow(df_pm_trips)` observations. For an overview of the variable
+names, see the following table.
+
+```{r, eval=TRUE}
+df_pm_trips |> 
+  head() |> 
+  gt::gt() |>
+  gt::as_raw_html()
+```
+
+```{r, echo=FALSE}
+readr::read_csv("data-raw/dictionary.csv") |> 
+  dplyr::filter(file_name == "df_pm_trips.rda") |> 
+  dplyr::select(variable_name:description) |> 
+  knitr::kable() |> 
+  kableExtra::kable_styling() |> 
+  kableExtra::scroll_box(height = "400px")
+```
+
+## df_sm
+
+To capture the ambient concentration and diurnal pattern of LAC,
+stationary monitoring was conducted in two specific areas, one planned
+and one unplanned. The monitoring campaign spanned from 13th July to
+22nd August during the winter season.
+
+The `df_sm` data set has `r ncol(df_sm)` variables and `r nrow(df_sm)`
+observations. For an overview of the variable names, see the following
+table.
+
+```{r, eval=TRUE}
+df_sm |> 
+  head() |> 
+  gt::gt() |>
+  gt::as_raw_html()
+```
+
+```{r, echo=FALSE}
+readr::read_csv("data-raw/dictionary.csv") |> 
+  dplyr::filter(file_name == "df_sm.rda") |> 
+  dplyr::select(variable_name:description) |> 
+  knitr::kable() |> 
+  kableExtra::kable_styling() |> 
+  kableExtra::scroll_box(height = "400px")
+```
+
+## df_collocation
+
+For quality assurance, the two sensors were collocated multiple times
+throughout the study: twice during mobile monitoring, twice during AAE
+experiments, and before and after stationary monitoring.
+
+The `df_collocation` data set has `r ncol(df_collocation)` variables and
+`r nrow(df_collocation)` observations. For an overview of the variable
+names, see the following table.
+
+```{r, eval=TRUE}
+df_collocation |> 
+  head() |> 
+  gt::gt() |>
+  gt::as_raw_html()
+```
+
+
+```{r, echo=FALSE}
+readr::read_csv("data-raw/dictionary.csv") |> 
+  dplyr::filter(file_name == "df_collocation.rda") |> 
+  dplyr::select(variable_name:description) |> 
+  knitr::kable() |> 
+  kableExtra::kable_styling() |> 
+  kableExtra::scroll_box(height = "400px")
+```
+
+## License
+
+Data are available as
+[CC-BY](https://github.com/Global-Health-Engineering/bcsa/blob/main/LICENSE.md).
+
+## Citation
+
+Please cite this package using:
+
+```{r}
+citation("bcsa")
+```
+
+## Additional data use information
