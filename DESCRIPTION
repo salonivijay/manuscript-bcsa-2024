@@ -1,0 +1,24 @@
+Package: manuscript-bcsa-2024
+Title: Data analysis code for manuscript "Light Absorbing Carbonaceous Aerosols: Concentrations and Sources in an Under-Monitored Setting"
+Version: 0.0.1
+Authors@R: c(
+    person("Saloni", "Vijay", , "svijay@ethz.ch", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-5883-5308")),
+    person("Elizabeth", "Tilley", , "tilleye@ethz.ch", role = "aut",
+           comment = c(ORCID = "0000-0002-2095-9724")),
+    person("Lars", "Schöbitz", , "lschoebitz@ethz.ch", role = "aut",
+           comment = c(ORCID = "0000-0003-2196-5015"))
+  )
+Description: The manuscript-bcsa-2024 package provides code for data analysis for the manuscript on "Light Absorbing Carbonaceous Aerosols: Concentrations and Sources in an Under-Monitored Setting". The package contains code for generating all the figures and tables in the main text and appendix. The data used in the manuscript is published as a separate R 
+package called bcsa. See the full reference in the README file or access it directly at <https://doi.org/10.5281/zenodo.12685803>.  
+  This study used the MA200 micro-aethalometer to measure the LAC concentrations. The MA200 measures the LAC concentrations in real-time at five different wavelengths, allowing for source apportionment. 
+  We used a novel clustering approach for source apportionment, explained in detail in another manuscript. See the full reference in the README file or access it at <https://doi.org/10.4209/aaqr.240095>.
+License: CC BY 4.0
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Depends: 
+    R (>= 2.10)
+LazyData: true
+Language: en-GB
+Date: 2024-12-04
