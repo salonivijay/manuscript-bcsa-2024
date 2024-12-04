@@ -1,0 +1,7 @@
+Phase,Monitoring frequency (s),No. of samples,Date,R2
+AAE experiments,30,718,2023-05-28,0.98
+AAE experiments,30,708,2023-05-31,0.98
+Mobile monitoring,30,465,2023-05-07,0.99
+Mobile monitoring,30,356,2023-05-12,0.98
+Post stationary monitoring,300,235,2023-08-26,0.92
+Pre stationary monitoring,300,106,2023-07-09,0.96

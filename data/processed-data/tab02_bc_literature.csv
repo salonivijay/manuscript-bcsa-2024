@@ -1,0 +1,29 @@
+Source,Location,Monitoring period,Monitoring method,Season,BC concentration [µg/m3],Remarks
+This study,"Sunnyside, Blantyre, Malawi",July to August 2023,MA200,Winter,9.22±6.33,PM2.5 inlet
+,"Ndirande, Blantyre, Malawi",July to August 2023,MA200,Winter,9.22±6.34,PM2.5 inlet
+Anand et al. (2024),"Accra, Ghana","Jan 2 to March 2, 2023",Analysed red light reflected by aersols deposited on BAM filter tapes,,5.33,
+,"Abidjan, Cote D'Ivoire","July 3 to Aug 29, 2020",BAM,,3.85,
+,Addis abba central dry season,"Dec 1 to Jan 30, 2021",BAM,Dry (summer),5.63,
+,Addis abba central rainy season,"June 23 to Aug 22, 2020",BAM,Rainy,3.89,
+,Addis abba Jacros winter,"Aug 2 to Aug 25, 2023",BAM,Rainy (Winter),9.14,
+Kalisa et al. (2023),"Kigali, Rwanda (Heavy traffic location)",Jan to Dec 2021,,All,9.22±6.33,
+,"Kigali, Rwanda (City center)",,,,7.78±5.08,
+De Witt et al. (2019),"Mt. Mugogo, Rawanda",May 2015 to Jan 2017,AE33,,1.7±1.6,PM2.5 inlet; 24-hour average around 5 ug/m3 in dry season
+Xulu et al. (2020),"Mpumalanga Highveld, South Africa",July to September 2014,,Winter,1.9±0.6,Residential solid fuel burning
+,,February to April 2015,,Summer,0.7±0.2,
+Doumbia et al. (2012),"Dakar, Senegal",June 2008 to July 2009,AE-42,,5.7-15.4,
+Doumbia et al. (2012),"Bamako, Mali",April 2008,AE-42,,19.2±8.9,
+Doumbia et al. (2012),"Cotonou, Benin",May 2005,AE-21,,4.9±3.9,
+Doumbia et al. (2012),"Yaounde, Cameroon (site 1)",June to July 2004,AE-31,,2.4±0.8,
+Doumbia et al. (2012),"Yaounde, Cameroon (site 2)",Aug 2010,AE-31,,5.7±2.3,
+,"Highveld, South Africa",Feb 2009 to Jan 2011,,,,PM10 inlet
+,"Rustenburg, South Africa",Sep 2008 to May 2010,,,,PM10 inlet
+,,,,,,
+,,,,,,
+,,,,,,
+Haq et al. (2023),"Peshawar, Pakistan",21-Mar,,Winter,12.1±5.4,Highest monthly concentration between March 2021 - August 2021
+,,21-Jul,,Summer,6.4±3.1,Lowest monthly concentration between March 2021 - August 2021
+Blanco-Donado et al. (2022),"Barranquilla, Colombia",May - June 2019,,Dry,1.04±1.03,Near traffic site
+Ambade et al. (2021),"Jamshedpur, India",December 2017 to November 2018,,Winter,11.68±2.55,Highest concentration in four seasons
+Krecl et al. (2021),"Londrina, Brazil",June to July 2017,,Winter,1.48±1.4,Influenced by waste burning
+,,,,Monsoon,3.23±0.38,Lowest concentration in four seasons

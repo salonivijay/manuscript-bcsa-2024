@@ -59,7 +59,7 @@ df_dist_mm_pm$exp_type <- recode(df_dist_mm_pm$exp_type,
                                  mobile_monitoring = "Mobile monitoring",
                                  personal_monitoring = "Mobile personal monitoring")
 
-tab_dist_mm_pm <- df_dist_mm_pm |> 
+tab01_dist_mm <- df_dist_mm_pm |> 
   rename("Monitoring type" = exp_type,
          "Location" = settlement_id,
          "Average distance [km]" = mean,
@@ -68,10 +68,16 @@ tab_dist_mm_pm <- df_dist_mm_pm |>
             round,
             digits = 2) 
 
+tab01_dist_mm %>% 
+  write_csv(here::here("data/processed-data/tab01_dist_mm.csv"))
+
 # Table 2: Literature eBC values ------------------------------------------
 
 
 table_bc_literature[is.na(table_bc_literature)] <- ""  
+
+table_bc_literature %>% 
+  write_csv(here::here("data/processed-data/tab02_bc_literature.csv"))
 
 
 # Table 3: sensor collocation ---------------------------------------------
@@ -180,3 +186,6 @@ table_sc_r2_final$Phase <- recode(table_sc_r2_final$Phase,
                                   aae_2  = 'AAE experiments',
                                   pre_stationary = 'Pre stationary monitoring',
                                   post_stationary_3 = 'Post stationary monitoring')
+
+table_sc_r2_final %>% 
+  write_csv(here::here("data/processed-data/tab03_sc_r2.csv"))
