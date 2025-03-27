@@ -5,14 +5,17 @@ library(dplyr)
 library(tidyverse)
 library(ggpmisc)
 
+source(here::here("R/data-smoothing.R"))
+source(here::here("R/tables.R"))
+
 # define a common plot theme ----------------------------------------------
 
-theme <- theme(axis.text.y   = element_text(size=6),
-               axis.text.x   = element_text(size=6),
-               axis.title.y  = element_text(size=7),
-               axis.title.x  = element_text(size=7),
-               legend.title = element_text(size = 7),# Legend title
-               legend.text = element_text(size = 6),
+theme <- theme(axis.text.y   = element_text(size=10),
+               axis.text.x   = element_text(size=10),
+               axis.title.y  = element_text(size=10),
+               axis.title.x  = element_text(size=10),
+               legend.title = element_text(size = 10),# Legend title
+               legend.text = element_text(size = 10),
                #panel.background = element_rect(fill='transparent'), #transparent panel bg.
                #plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg.
                #axis.line = element_line(colour = "black"),
@@ -26,7 +29,7 @@ theme <- theme(axis.text.y   = element_text(size=6),
 
 # meteorology -------------------------------------------------------------
 
-load(here::here("data/df_met.rda"))
+load(here::here("data/raw-data/df_met.rda"))
 
 # df_met is the file taken from TAHMO. The data during particular experiment 
 # type was filtered from the met data from TAHMO. We cannot provide
@@ -72,13 +75,18 @@ p_app_boxplot_windspeed_mobile <- df_met %>%
   filter(exp_type == "mobile_monitoring") %>% 
   ggplot() +
   geom_boxplot(aes(y = windspeed, x = exp_type)) +
-  labs(y = expression("Wind speed (m/s)"),
+  labs(y = expression("Wind speed (m s"^{-1}*")"),
        x = "Mobile monitoring") +
-  theme_minimal() +
-  theme(axis.text.x = element_blank(),
-        axis.title.x = element_blank()) +
-  theme
+  theme +
+  theme(
+        axis.text.x = element_blank()) 
 
+ggsave("figures/appendix/fig-S01.jpeg", 
+       plot = p_app_boxplot_windspeed_mobile,  # your plot object
+       width = 8.9,                            # Width in cm for single-column (3.5 inches)
+       height = 8.9,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+       units = "cm") # Units for width and height
 
 # Figure S2: Wind rose plot during stationary monitoring period -----------
 
@@ -89,10 +97,9 @@ p_app_wr_stationary <- windRose(df_met_stationary,
                           ws = "windspeed", 
                           wd = "winddirection") 
 
-wd_sm <- as_tibble((wr_stationary[["data"]][["freqs"]]), rownames = "degrees") |> 
+wd_sm <- as_tibble((p_app_wr_stationary[["data"]][["freqs"]]), rownames = "degrees") |> 
   filter(value == max(value)) |> 
   pull(degrees)
-
 
 # Figure S3: eBC v/s wind speed during stationary monitoring --------
 
@@ -107,6 +114,8 @@ df_windspeed_stationary <- df_met_stationary %>%
                           "serial_number", 
                           "date_time"))
 
+library(viridis)
+
 p_app_ebc_windspeed_stationary <- df_windspeed_stationary %>% 
   drop_na(windspeed, ir_bcc) %>% 
   ggplot(aes(x = windspeed, y = ir_bcc/1000)) +
@@ -119,8 +128,15 @@ p_app_ebc_windspeed_stationary <- df_windspeed_stationary %>%
                label.x = "right", label.y = "top") +
   facet_wrap(~settlement_id, scales = "free") +
   theme_minimal() +
-  theme
+  theme +
+  scale_color_viridis(discrete = TRUE) # Add this line for color-blind friendly colors
 
+ggsave("figures/appendix/fig-S03.jpeg", 
+       plot = p_app_ebc_windspeed_stationary,  # your plot object
+       width = 12.7,                            # Width in cm for single-column (3.5 inches)
+       height = 6,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+       units = "cm") # Units for width and height
 
 # Figure S4: Diurnal pattern weekday and weekend --------------------------
 
@@ -134,16 +150,20 @@ confidence_intervals_day_type <- df_sm_hourly %>%
             upper_ci_ir = t.test(ir_bcc)$conf.int[2],
             mean_ir = mean(ir_bcc)) 
 
+# Define colorblind-friendly colors
+color1 <- "#E69F00"  # Orange
+color2 <- "#56B4E9"  # Light blue
+
 p_app_diurnal_day_type <- confidence_intervals_day_type |>
   ggplot(aes(x = hour)) +
-  geom_line(aes(y = mean_ir), color = "#003366") +
+  geom_line(aes(y = mean_ir), color = color1) +
   geom_ribbon(aes(ymin = lower_ci_ir,
                   ymax = upper_ci_ir),
-              fill = "#003366",
+              fill = color1,
               alpha = 0.3) +
-  geom_line(aes(y = mean*3.5), color = "red") +
+  geom_line(aes(y = mean*3.5), color = color2) +
   geom_ribbon(aes(ymin = lower_ci*3.5, ymax = upper_ci*3.5),
-              fill = "red", alpha = 0.3) +
+              fill = color2, alpha = 0.3) +
   scale_y_continuous(
     name = expression("eBC concentration ("*µ*"g/m"^3*")"),
     sec.axis = sec_axis(~./3.500, 
@@ -153,18 +173,22 @@ p_app_diurnal_day_type <- confidence_intervals_day_type |>
   scale_x_continuous(breaks = seq(0, 24, by = 4)) +
   facet_wrap(day_type~settlement_id) +
   theme(legend.position = "none",
-        axis.line.y.left = element_line(color = "#003366"),
-        axis.line.y.right = element_line(color = "red"),
-        axis.title.y.left = element_text(color = "#003366"),
-        axis.title.y.right = element_text(color = "red"),
-        axis.text.y.left = element_text(color = "#003366"),
-        axis.text.y.right = element_text(color = "red"),
-        axis.ticks.y.left = element_line(color = "#003366"),
-        axis.ticks.y.right = element_line(color = "red")) +
+        axis.line.y.left = element_line(color = color1),
+        axis.line.y.right = element_line(color = color2),
+        axis.title.y.left = element_text(color = color1),
+        axis.title.y.right = element_text(color = color2),
+        axis.text.y.left = element_text(color = color1),
+        axis.text.y.right = element_text(color = color2),
+        axis.ticks.y.left = element_line(color = color1),
+        axis.ticks.y.right = element_line(color = color2)) +
   theme
 
-
-# Figure S5: Collocation of MA200-0416 and MA200-0420 ---------------------
+ggsave("figures/appendix/fig-S04.jpeg", 
+       plot = p_app_diurnal_day_type,  # your plot object
+       width = 12.7,                            # Width in cm for single-column (3.5 inches)
+       height = 8.9,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+       units = "cm") # Units for width and height
 
 p_app_coll <- df_sc |> 
   pivot_wider(names_from = serial_number,
@@ -176,16 +200,26 @@ p_app_coll <- df_sc |>
   mutate(`ir_bcc_MA200-0416` = `ir_bcc_MA200-0416`/1000,
          `ir_bcc_MA200-0420` = `ir_bcc_MA200-0420`/1000) %>% 
   ggplot(aes(x = `ir_bcc_MA200-0416`, y = `ir_bcc_MA200-0420`)) +
-  geom_point() +
-  geom_smooth(method = "lm") +
+  geom_point(size = 0.5, alpha = 0.6) +
+  geom_smooth(method = "lm", color = "#0072B2") +
   labs(x = expression("Mean eBC concentration ("*µ*"g/m"^3*") - 0416"),
        y = expression("Mean eBC concentration ("*µ*"g/m"^3*") - 0420"),
        color = "Settlement") +
   stat_poly_eq(aes(label = paste(after_stat(eq.label), after_stat(rr.label), sep = "~~~")),
                label.x = "right", label.y = "top") +
-  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
-  annotate("text", x = 16, y = 17, label = "y = x", hjust = 1.1, vjust = 1.1, color = "red") +
-  theme
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "#D55E00") +
+  annotate("text", x = 14, y = 15, label = "y = x", hjust = 1.1, vjust = 1.1, color = "#D55E00") +
+  theme +
+  scale_color_viridis_d()
+
+
+
+ggsave("figures/appendix/fig-S05.jpeg", 
+       plot = p_app_coll,  # your plot object
+       width = 12.7,                            # Width in cm for single-column (3.5 inches)
+       height = 8.9,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+       units = "cm") # Units for width and height
 
 # Figure S6: Collocation of hourly data from MA200-0416 and MA200-0420 -------
 
@@ -213,6 +247,11 @@ p_app_coll_hourly <- df_sc |>
   annotate("text", x = 15, y = 16, label = "y = x", hjust = 1.1, vjust = 1.1, color = "red") +
   theme
 
-
+ggsave("figures/appendix/fig-S06.jpeg", 
+       plot = p_app_coll_hourly,  # your plot object
+       width = 8.9,                            # Width in cm for single-column (3.5 inches)
+       height = 8.9,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+       units = "cm") # Units for width and height
 
 

@@ -32,7 +32,7 @@ theme_map <- theme(axis.text.y   = element_text(size=12, angle = 90),
 
 # data from: https://data.humdata.org/dataset/cod-ab-mwi
 
-malawi_shp_adm2 <- read_sf("data/mwi_adm_nso_20181016_shp/mwi_admbnda_adm2_nso_20181016.shp") 
+malawi_shp_adm2 <- read_sf("data/raw-data/mwi_adm_nso_20181016_shp/mwi_admbnda_adm2_nso_20181016.shp") 
 
 malawi_shp_adm2_4326 <- st_transform(malawi_shp_adm2, crs = 4326)
 
@@ -202,3 +202,66 @@ ggsave("figures/p_map_study.jpeg",
        height = 5,                           # Height in cm (can be adjusted as needed)
        dpi = 300,
 )
+
+
+library(sf)
+library(ggplot2)
+library(dplyr)
+library(stars)
+library(viridis)
+
+# Load your mobile monitoring data
+data <- df_mm %>% 
+  filter(!time_of_day %in% "Morning",
+         settlement_id %in% "Ndirande")
+  
+
+# Ensure necessary columns are present
+if (!all(c("lat", "long", "ir_bcc", "timestamp") %in% names(data))) {
+  stop("Data must contain 'lat', 'long', 'ir_bcc', and 'timestamp' columns.")
+}
+
+# Convert timestamp to Date
+data$timestamp <- as.Date(data$timestamp)
+
+# Convert data to sf object
+data_sf <- st_as_sf(data, coords = c("long", "lat"), crs = 4326)
+
+# Define grid resolution (100m x 100m)
+grid <- st_make_grid(data_sf, cellsize = c(0.0002, 0.0002))  # Approx. 100m at equator
+grid_sf <- st_sf(grid_id = 1:length(grid), geometry = grid)
+
+# Spatial join to assign points to grid cells
+joined_data <- st_join(data_sf, grid_sf)
+
+# Compute average concentration over 8 days per grid cell
+avg_concentration <- joined_data %>%
+  group_by(grid_id) %>%
+  summarise(avg_conc = mean(ir_bcc, na.rm = TRUE)/1000,
+            median_conc = median(ir_bcc, na.rm = TRUE)/1000)
+
+# Ensure grid_sf has grid_id
+grid_sf <- grid_sf %>% mutate(grid_id = seq_along(geometry))
+
+# Merge with grid to retain spatial structure
+final_map <- st_join(grid_sf, avg_concentration)
+
+# Ensure avg_conc column exists and is not empty
+#final_map$avg_conc[is.na(final_map$avg_conc)] <- 0
+# Categorize concentrations into bins
+final_map$conc_category <- cut(final_map$median_conc, 
+                               breaks = c(-Inf, 5, 10, 15, 20, Inf),
+                               labels = c("<5", "5-10", "10-15", "15-20", ">20"))
+
+# Plot the result
+pollution_map <- ggplot() +
+  geom_sf(data = final_map, aes(fill = conc_category), color = "black", size = 0.1) +
+  scale_fill_viridis(discrete = TRUE, option = "plasma", na.value = "white") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "right") +
+  labs(title = "Average Air Pollution Concentration (8 Days, 100m Grid)",
+       fill = "Concentration Category")
+
+print(pollution_map)
+
+
