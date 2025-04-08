@@ -64,12 +64,9 @@ map_malawi <- ggplot()  +
 
 df_mm_road_type <- df_mm_road_type
 
-df_study_area <- bind_rows(
-  df_mm_road_type |> 
-    select(id, lat, long, exp_type, time_of_day, settlement_id) |> 
-    filter(time_of_day != "Morning"),
-  df_pm |> select(id, lat, long, exp_type, time_of_day, settlement_id) |> 
-    filter(time_of_day != "Morning")) |> 
+df_study_area <- df_mm_road_type |> 
+    select(id, lat, long, exp_type, time_of_day, settlement_id, type_of_road, time) |> 
+    filter(time_of_day != "Morning") %>% 
   filter(id %in% c(9:12, 33:35, 89, 92, 95, 96, 28)) 
 
 df_study_area_mm <- df_study_area |> 
@@ -212,23 +209,13 @@ library(viridis)
 
 # Load your mobile monitoring data
 data <- df_mm %>% 
-  filter(!time_of_day %in% "Morning",
-         settlement_id %in% "Ndirande")
-  
-
-# Ensure necessary columns are present
-if (!all(c("lat", "long", "ir_bcc", "timestamp") %in% names(data))) {
-  stop("Data must contain 'lat', 'long', 'ir_bcc', and 'timestamp' columns.")
-}
-
-# Convert timestamp to Date
-data$timestamp <- as.Date(data$timestamp)
+  filter(!time_of_day %in% "Morning")
 
 # Convert data to sf object
 data_sf <- st_as_sf(data, coords = c("long", "lat"), crs = 4326)
 
 # Define grid resolution (100m x 100m)
-grid <- st_make_grid(data_sf, cellsize = c(0.0002, 0.0002))  # Approx. 100m at equator
+grid <- st_make_grid(data_sf, cellsize = c(0.001, 0.001))  # Approx. 100m at equator
 grid_sf <- st_sf(grid_id = 1:length(grid), geometry = grid)
 
 # Spatial join to assign points to grid cells
@@ -238,7 +225,8 @@ joined_data <- st_join(data_sf, grid_sf)
 avg_concentration <- joined_data %>%
   group_by(grid_id) %>%
   summarise(avg_conc = mean(ir_bcc, na.rm = TRUE)/1000,
-            median_conc = median(ir_bcc, na.rm = TRUE)/1000)
+            median_conc = median(ir_bcc, na.rm = TRUE)/1000,
+            median_aae = median(aae_blue_ir, na.rm = TRUE))
 
 # Ensure grid_sf has grid_id
 grid_sf <- grid_sf %>% mutate(grid_id = seq_along(geometry))
@@ -253,15 +241,40 @@ final_map$conc_category <- cut(final_map$median_conc,
                                breaks = c(-Inf, 5, 10, 15, 20, Inf),
                                labels = c("<5", "5-10", "10-15", "15-20", ">20"))
 
+final_map$aae_category <- cut(final_map$median_aae, 
+                               breaks = c(-Inf, 1.29, 1.63, Inf),
+                               labels = c("ff", "mixed", "bb"))
+
 # Plot the result
 pollution_map <- ggplot() +
-  geom_sf(data = final_map, aes(fill = conc_category), color = "black", size = 0.1) +
-  scale_fill_viridis(discrete = TRUE, option = "plasma", na.value = "white") +
+  base_map(st_bbox(map_data_point), 
+           basemap = "google-satellite", 
+           increase_zoom = 7) +
+  geom_sf(data = final_map, aes(fill = conc_category),color = NA) +
+  scale_fill_viridis(discrete = TRUE, na.value = "0") +
   theme_minimal(base_size = 14) +
   theme(legend.position = "right") +
-  labs(title = "Average Air Pollution Concentration (8 Days, 100m Grid)",
-       fill = "Concentration Category")
+  labs(fill = "eBC concentration")
 
 print(pollution_map)
 
 
+
+aae_map <- ggplot() +
+  base_map(st_bbox(map_data_point), 
+           basemap = "google-satellite", 
+           increase_zoom = 2) +
+  geom_sf(data = final_map, aes(fill = aae_category, alpha = 0.5),color = NA) +
+  scale_fill_viridis(discrete = TRUE, na.value = "0") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "right") +
+  labs(fill = "eBC concentration")
+
+aae_map
+
+ggsave("figures/p_aae_map.jpeg",
+       plot = aae_map,
+       width = 8.9,
+       height = 5,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+)
