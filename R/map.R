@@ -186,19 +186,19 @@ p_map_routes <- ggplot() +
         strip.text = element_text(size = 13),
         legend.position = "none")
 
-ggsave("figures/p_map_routes.jpeg",
-       plot = p_map_routes,
-       width = 8.9,
-       height = 6,
-       dpi = 300
-)
-
-ggsave("figures/p_map_study.jpeg",
-       plot = p_map_study,
-       width = 8.9,
-       height = 5,                           # Height in cm (can be adjusted as needed)
-       dpi = 300,
-)
+# ggsave("figures/p_map_routes.jpeg",
+#        plot = p_map_routes,
+#        width = 8.9,
+#        height = 6,
+#        dpi = 300
+# )
+# 
+# ggsave("figures/p_map_study.jpeg",
+#        plot = p_map_study,
+#        width = 8.9,
+#        height = 5,                           # Height in cm (can be adjusted as needed)
+#        dpi = 300,
+# )
 
 
 library(sf)
@@ -258,13 +258,28 @@ pollution_map <- ggplot() +
 
 print(pollution_map)
 
-
+ggsave("figures/p_concentration_map.jpeg",
+       plot = pollution_map,
+       width = 8.9,
+       height = 5,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+)
 
 aae_map <- ggplot() +
   base_map(st_bbox(map_data_point), 
            basemap = "google-satellite", 
-           increase_zoom = 2) +
-  geom_sf(data = final_map, aes(fill = aae_category, alpha = 0.5),color = NA) +
+           increase_zoom = 5) +
+  geom_sf(data = final_map, aes(fill = aae_category),color = NA) +
+  geom_path(data = df_study_area_mm,
+            aes(x = long,
+                y = lat,
+                group = as.factor(id),
+                color = as.factor(type_of_road)),
+            size = 0.3) +
+  scale_color_manual(
+    values = c("main_road" = "black", "non_main_road" = "white"),
+    name = "Type of road"
+  ) +
   scale_fill_viridis(discrete = TRUE, na.value = "0") +
   theme_minimal(base_size = 14) +
   theme(legend.position = "right") +
@@ -272,9 +287,9 @@ aae_map <- ggplot() +
 
 aae_map
 
-ggsave("figures/p_aae_map.jpeg",
-       plot = aae_map,
-       width = 8.9,
-       height = 5,                           # Height in cm (can be adjusted as needed)
-       dpi = 300,
-)
+# ggsave("figures/p_aae_map.jpeg",
+#        plot = aae_map,
+#        width = 8.9,
+#        height = 5,                           # Height in cm (can be adjusted as needed)
+#        dpi = 300,
+# )

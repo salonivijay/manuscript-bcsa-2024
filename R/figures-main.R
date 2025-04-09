@@ -99,7 +99,8 @@ settlements_vec <- c("Ndirande", "Chirimba", "Kacheri", "Bangwe",
 
 settlement_types_order <- df_monitoring |>
   filter(exp_type == "mobile_monitoring") |>
-  mutate(settlement_id = factor(settlement_id, levels = settlements_vec)) |>
+  mutate(settlement_id = factor(settlement_id, 
+                                levels = settlements_vec)) |>
   arrange(settlement_id) |>
   pull(type_of_settlement) |>
   unique()
@@ -124,11 +125,12 @@ fig02_mm_boxplot <- df_monitoring |>
                                 levels = settlement_types_order)
   ) 
 
-fig02_mm_boxplot %>% 
-write_csv(here::here("data/processed-data/fig02_mm_boxplot.csv"))
+# fig02_mm_boxplot %>% 
+# write_csv(here::here("data/processed-data/fig02_mm_boxplot.csv"))
 
 # Boxplot Code
 p_boxplot_mm <- fig02_mm_boxplot |>
+  filter(settlement_id %in% c("Nyambadwe", "Ndirande")) %>% 
   ggplot(aes(x = settlement_id, 
              y = ir_bcc, 
              fill = type_of_settlement)) +
@@ -142,9 +144,9 @@ p_boxplot_mm <- fig02_mm_boxplot |>
                position = position_dodge(width = 1)) +
   scale_y_continuous(labels=scaleFUN2, 
                      breaks = seq(0, 
-                                  25, 
-                                  by = 5)) +
-  coord_cartesian(ylim=c(0, 25)) +
+                                  10, 
+                                  by = 1)) +
+  coord_cartesian(ylim=c(0, 10)) +
   scale_fill_manual(values = cb_fill_palette) +  # Apply the color-blind palette
   labs(y = expression("eBC concentration (µg m"^-3*")"),
        x = "Location",
@@ -152,8 +154,11 @@ p_boxplot_mm <- fig02_mm_boxplot |>
   theme +
   theme(axis.text.x = 
           element_text(angle = 45, 
-                       hjust=1))
+                       hjust=1),
+        panel.grid.minor.y = element_line(color = "lightblue", size = 0.25, linetype = "dotted"))
 
+
+p_boxplot_mm
 
 # Figure 3: Source apportionment mobile monitoring ------------------------
 # create functions for source apportionment figures
@@ -263,8 +268,8 @@ p_mm_sa_cluster_formal <- result_sa_cluster_formal$plot +
 
 fig03_a_cluster_formal <- result_sa_cluster_formal$data
 
-fig03_a_cluster_formal %>% 
-  write_csv(here::here("data/processed-data/fig03_a_cluster_formal.csv"))
+# fig03_a_cluster_formal %>% 
+#   write_csv(here::here("data/processed-data/fig03_a_cluster_formal.csv"))
 
 # Figure 3 (b): clustering informal settlements
 
@@ -278,8 +283,8 @@ p_mm_sa_cluster_informal <- result_sa_cluster_informal$plot +
 
 fig03_b_cluster_informal <- result_sa_cluster_informal$data
 
-fig03_b_cluster_informal %>% 
-  write_csv(here::here("data/processed-data/fig03_b_cluster_informal.csv"))
+# fig03_b_cluster_informal %>% 
+#   write_csv(here::here("data/processed-data/fig03_b_cluster_informal.csv"))
 
 # Figure 3 (c): weighted average formal settlements
 
@@ -293,8 +298,8 @@ p_wt_avg_mm_formal <- result_wt_avg_mm_formal$plot +
 
 fig03_c_wt_avg_formal <- result_wt_avg_mm_formal$data
 
-fig03_c_wt_avg_formal %>% 
-  write_csv(here::here("data/processed-data/fig03_c_wt_avg_formal.csv"))
+# fig03_c_wt_avg_formal %>% 
+#   write_csv(here::here("data/processed-data/fig03_c_wt_avg_formal.csv"))
 
 # Figure 3 (d): weighted average informal settlements
 
@@ -308,8 +313,8 @@ p_wt_avg_mm_informal <- result_wt_avg_mm_informal$plot +
 
 fig03_d_wt_avg_informal <- result_wt_avg_mm_informal$data
 
-fig03_d_wt_avg_informal %>% 
-  write_csv(here::here("data/processed-data/fig03_d_wt_avg_informal.csv"))
+# fig03_d_wt_avg_informal %>% 
+#   write_csv(here::here("data/processed-data/fig03_d_wt_avg_informal.csv"))
 
 # Figure 3 (a) + Figure 3 (b) 
 
@@ -338,8 +343,8 @@ p_sm_sa_cluster <- result_sm_sa_cluster$plot +
 
 fig05_a_sm_cluster <- result_sm_sa_cluster$data
 
-fig05_a_sm_cluster %>% 
-  write_csv(here::here("data/processed-data/fig05_a_sm_cluster.csv"))
+# fig05_a_sm_cluster %>% 
+#   write_csv(here::here("data/processed-data/fig05_a_sm_cluster.csv"))
 
 # Figure 5 (b): weighted average stationary monitoring
 
@@ -350,8 +355,8 @@ p_wt_avg_sm <- result_wt_avg_sm$plot +
 
 fig05_b_sm_wt_avg <- result_wt_avg_sm$data
 
-fig05_b_sm_wt_avg %>% 
-  write_csv(here::here("data/processed-data/fig05_b_sm_wt_avg.csv"))
+# fig05_b_sm_wt_avg %>% 
+#   write_csv(here::here("data/processed-data/fig05_b_sm_wt_avg.csv"))
 
 # Figure 7: Diurnal pattern of eBC ----------------------------------------
 
@@ -411,34 +416,87 @@ ggsave(
   units = "cm", # Units for width and height
 )
 
-ggsave("figures/p_wt_avg_mm.jpeg", 
-       plot = p_wt_avg_mm,  # your plot object
-       width = 12.7,                            # Width in cm for single-column (3.5 inches)
-       height = 5,                           # Height in cm (can be adjusted as needed)
-       dpi = 300,
-       units = "cm") # Units for width and height
+# ggsave("figures/p_wt_avg_mm.jpeg", 
+#        plot = p_wt_avg_mm,  # your plot object
+#        width = 12.7,                            # Width in cm for single-column (3.5 inches)
+#        height = 5,                           # Height in cm (can be adjusted as needed)
+#        dpi = 300,
+#        units = "cm") # Units for width and height
+# 
+# ggsave("figures/p_sm_sa_cluster.jpeg", 
+#        plot = p_sm_sa_cluster,  # your plot object
+#        width = 8.9,                            # Width in cm for single-column (3.5 inches)
+#        height = 6,                           # Height in cm (can be adjusted as needed)
+#        dpi = 300,
+#        units = "cm") # Units for width and height
+# 
+# 
+# ggsave("figures/p_wt_avg_sm.jpeg", 
+#        plot = p_wt_avg_sm,  # your plot object
+#        width = 8.9,                            # Width in cm for single-column (3.5 inches)
+#        height = 5,                           # Height in cm (can be adjusted as needed)
+#        dpi = 300,
+#        units = "cm") # Units for width and height
+# 
+# 
+# # Save Figure 7
+# ggsave("figures/p_diurnal.jpeg", 
+#        plot = p_diurnal,  # your plot object
+#        width = 8.9,                            # Width in cm for single-column (3.5 inches)
+#        height = 5,                           # Height in cm (can be adjusted as needed)
+#        dpi = 300,
+#        units = "cm") # Units for width and height
 
-ggsave("figures/p_sm_sa_cluster.jpeg", 
-       plot = p_sm_sa_cluster,  # your plot object
-       width = 8.9,                            # Width in cm for single-column (3.5 inches)
-       height = 6,                           # Height in cm (can be adjusted as needed)
-       dpi = 300,
-       units = "cm") # Units for width and height
+# statistical difference --------------------------------------------------
 
 
-ggsave("figures/p_wt_avg_sm.jpeg", 
-       plot = p_wt_avg_sm,  # your plot object
-       width = 8.9,                            # Width in cm for single-column (3.5 inches)
-       height = 5,                           # Height in cm (can be adjusted as needed)
-       dpi = 300,
-       units = "cm") # Units for width and height
+# library(rstatix)
+# 
+# # Perform pairwise Wilcoxon rank-sum tests
+# 
+# irbcc_nyambadwe <- fig02_mm_boxplot %>% 
+#   filter(settlement_id == "Nyambadwe")
+# 
+# irbcc_ndirande <- fig02_mm_boxplot %>% 
+#   filter(settlement_id == "Ndirande")
+# 
+# wilcox.test(irbcc_nyambadwe$ir_bcc, 
+#             irbcc_ndirande$ir_bcc, 
+#             paired = FALSE)
+# 
+# result <- pairwise.wilcox.test(fig02_mm_boxplot$ir_bcc, fig02_mm_boxplot$settlement_id, 
+#                                p.adjust.method = "BH") # Adjust p-values using Benjamini-Hochberg method
+# 
+# # View the results
+# print(result)
+# 
+# # Define the function to calculate confidence intervals for the median
+# calculate_notch <- function(data) {
+#   median_value <- median(data)
+#   iqr <- IQR(data)  # Interquartile Range
+#   n <- length(data) # Sample size
+#   
+#   # Confidence Interval calculation for notched box plots
+#   lower_bound <- median_value - 1.58 * iqr / sqrt(n)
+#   upper_bound <- median_value + 1.58 * iqr / sqrt(n)
+#   
+#   return(c(lower_bound, upper_bound))
+# }
+# 
+# 
+# # Calculate notches for both datasets
+# notch1 <- calculate_notch(irbcc_nyambadwe$ir_bcc)
+# notch2 <- calculate_notch(irbcc_ndirande$ir_bcc)
+# 
+# # Print results
+# cat("Dataset 1 Notch CI:", notch1, "\n")
+# cat("Dataset 2 Notch CI:", notch2, "\n")
+# 
+# # Assess statistical significance based on overlap of notches
+# if (notch1[2] < notch2[1] || notch2[2] < notch1[1]) {
+#   cat("The medians are statistically significantly different.\n")
+# } else {
+#   cat("The medians are not statistically significantly different.\n")
+# }
 
-
-# Save Figure 7
-ggsave("figures/p_diurnal.jpeg", 
-       plot = p_diurnal,  # your plot object
-       width = 8.9,                            # Width in cm for single-column (3.5 inches)
-       height = 5,                           # Height in cm (can be adjusted as needed)
-       dpi = 300,
-       units = "cm") # Units for width and height
 

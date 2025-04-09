@@ -78,8 +78,8 @@ p_app_boxplot_windspeed_mobile <- df_met %>%
   labs(y = expression("Wind speed (m s"^{-1}*")"),
        x = "Mobile monitoring") +
   theme +
-  theme(
-        axis.text.x = element_blank()) 
+  theme(axis.text.x = element_blank()) 
+
 
 ggsave("figures/appendix/fig-S01.jpeg", 
        plot = p_app_boxplot_windspeed_mobile,  # your plot object
