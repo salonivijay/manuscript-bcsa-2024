@@ -8,3 +8,4 @@ data/df_met.rda
 data/meteorology/
 .DS_Store
 **/DS_Store
+.RDataTmp
