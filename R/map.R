@@ -258,12 +258,12 @@ pollution_map <- ggplot() +
 
 print(pollution_map)
 
-ggsave("figures/p_concentration_map.jpeg",
-       plot = pollution_map,
-       width = 8.9,
-       height = 5,                           # Height in cm (can be adjusted as needed)
-       dpi = 300,
-)
+# ggsave("figures/p_concentration_map.jpeg",
+#        plot = pollution_map,
+#        width = 8.9,
+#        height = 5,                           # Height in cm (can be adjusted as needed)
+#        dpi = 300,
+# )
 
 aae_map <- ggplot() +
   base_map(st_bbox(map_data_point), 
