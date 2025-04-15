@@ -72,7 +72,10 @@ df_avg_wind <- df_met |>
 # Figure S1: Box-plot of wind speed during mobile monitoring times --------
 
 p_app_boxplot_windspeed_mobile <- df_met %>% 
-  filter(exp_type == "mobile_monitoring") %>% 
+  filter(exp_type == "mobile_monitoring",
+         !id %in% c(1:8)) %>% 
+  #remove values during sensor collocation (remove 420 monitor - random)
+  filter(!id %in% c(17:24,65:72)) %>% 
   ggplot() +
   geom_boxplot(aes(y = windspeed, x = exp_type)) +
   labs(y = expression("Wind speed (m s"^{-1}*")"),
@@ -80,6 +83,45 @@ p_app_boxplot_windspeed_mobile <- df_met %>%
   theme +
   theme(axis.text.x = element_blank()) 
 
+p_app_boxplot_windspeed_mobile
+
+wind_df_met <- df_met %>% 
+  filter(exp_type == "mobile_monitoring",
+         !id %in% c(1:8)) %>% 
+#remove values during sensor collocation (remove 420 monitor - random)
+filter(!id %in% c(17:24,65:72))  
+
+wind_df_mm <- df_mm_road_type %>%
+  filter(exp_type == "mobile_monitoring", !id %in% 1:8) %>%
+  mutate(date_time = floor_date(date_time, "5 minutes")) %>%
+  group_by(id, session_id, date_time) %>%
+  summarise(ir_bcc = mean(ir_bcc, na.rm = TRUE), .groups = "drop")
+
+library(data.table)
+
+# Convert both to data.table format
+dt_met_mm <- as.data.table(wind_df_met)
+dt_mm_mm <- as.data.table(wind_df_mm)
+
+
+# Set keys for rolling join
+setkey(dt_mm_mm, id, session_id, date_time)
+setkey(dt_met_mm, id, session_id, date_time)
+
+# Perform rolling join: nearest time, match on id and session_id
+joined_df <- dt_mm_mm[dt_met_mm, roll = "nearest"]
+
+joined_df %>% 
+ggplot(aes(x = windspeed, y = ir_bcc)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE, color = "blue") +
+  facet_wrap(~ id, scales = "free") 
+
+cor.test(joined_df$windspeed, joined_df$ir_bcc, method = "spearman")
+
+windRose(wind_df_met, 
+         ws = "windspeed", 
+         wd = "winddirection") 
 
 ggsave("figures/appendix/fig-S01.jpeg", 
        plot = p_app_boxplot_windspeed_mobile,  # your plot object
