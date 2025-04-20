@@ -130,12 +130,11 @@ fig02_mm_boxplot <- df_monitoring |>
 
 # Boxplot Code
 p_boxplot_mm <- fig02_mm_boxplot |>
-  filter(settlement_id %in% c("Nyambadwe", "Ndirande")) %>% 
   ggplot(aes(x = settlement_id, 
              y = ir_bcc, 
              fill = type_of_settlement)) +
   geom_boxplot(position = position_dodge(width = 1),
-               outlier.shape = NA,
+               #outlier.shape = NA,
                notch = TRUE,
                width = 0.5) +
   stat_summary(fun.y=mean, geom="point", 
@@ -144,9 +143,9 @@ p_boxplot_mm <- fig02_mm_boxplot |>
                position = position_dodge(width = 1)) +
   scale_y_continuous(labels=scaleFUN2, 
                      breaks = seq(0, 
-                                  10, 
-                                  by = 1)) +
-  coord_cartesian(ylim=c(0, 10)) +
+                                  25, 
+                                  by = 5)) +
+  coord_cartesian(ylim=c(0, 25)) +
   scale_fill_manual(values = cb_fill_palette) +  # Apply the color-blind palette
   labs(y = expression("eBC concentration (µg m"^-3*")"),
        x = "Location",
@@ -159,6 +158,8 @@ p_boxplot_mm <- fig02_mm_boxplot |>
 
 
 p_boxplot_mm
+
+
 
 # Figure 3: Source apportionment mobile monitoring ------------------------
 # create functions for source apportionment figures
@@ -400,21 +401,21 @@ p_diurnal <- confidence_intervals |>
 # Save figures ------------------------------------------------------------
 
 # Save Figure 7
-ggsave("figures/p_boxplot_mm.jpeg", 
-       plot = p_boxplot_mm,  # your plot object
-       width = 12.7,                            # Width in cm for single-column (3.5 inches)
-       height = 8,                           # Height in cm (can be adjusted as needed)
-       dpi = 300,
-       units = "cm") # Units for width and height
-
-ggsave(
-  filename = "figures/p_mm_sa.jpeg", 
-  plot = p_mm_sa,                        # The ggplot object
-  width = 12.7,                            # Width in cm for single-column (3.5 inches)
-  height = 7,                           # Height in cm (can be adjusted as needed)
-  dpi = 300,
-  units = "cm", # Units for width and height
-)
+# ggsave("figures/p_boxplot_mm.jpeg", 
+#        plot = p_boxplot_mm,  # your plot object
+#        width = 12.7,                            # Width in cm for single-column (3.5 inches)
+#        height = 8,                           # Height in cm (can be adjusted as needed)
+#        dpi = 300,
+#        units = "cm") # Units for width and height
+# 
+# ggsave(
+#   filename = "figures/p_mm_sa.jpeg", 
+#   plot = p_mm_sa,                        # The ggplot object
+#   width = 12.7,                            # Width in cm for single-column (3.5 inches)
+#   height = 7,                           # Height in cm (can be adjusted as needed)
+#   dpi = 300,
+#   units = "cm", # Units for width and height
+# )
 
 # ggsave("figures/p_wt_avg_mm.jpeg", 
 #        plot = p_wt_avg_mm,  # your plot object
@@ -449,27 +450,71 @@ ggsave(
 
 # statistical difference --------------------------------------------------
 
+## check normality by Shapiro test
 
-# library(rstatix)
-# 
+library(tidyverse)
+library(broom)
+library(ggpubr)
+
+# 1. Test normality
+normality_results <- fig02_mm_boxplot %>% 
+  group_by(settlement_id) %>% 
+  summarise(
+    shapiro = list(shapiro.test(ir_bcc)),
+    tidied = map(shapiro, tidy)
+  ) %>% 
+  unnest(tidied)
+
+# 2. Print results
+normality_results %>% select(settlement_id, statistic, p.value)
+
+# 3. Visualize
+ggplot(fig02_mm_boxplot, aes(sample = ir_bcc)) +
+  geom_qq() +
+  geom_qq_line() +
+  facet_wrap(~settlement_id)
+
 # # Perform pairwise Wilcoxon rank-sum tests
-# 
-# irbcc_nyambadwe <- fig02_mm_boxplot %>% 
-#   filter(settlement_id == "Nyambadwe")
-# 
-# irbcc_ndirande <- fig02_mm_boxplot %>% 
-#   filter(settlement_id == "Ndirande")
-# 
-# wilcox.test(irbcc_nyambadwe$ir_bcc, 
-#             irbcc_ndirande$ir_bcc, 
-#             paired = FALSE)
-# 
-# result <- pairwise.wilcox.test(fig02_mm_boxplot$ir_bcc, fig02_mm_boxplot$settlement_id, 
-#                                p.adjust.method = "BH") # Adjust p-values using Benjamini-Hochberg method
-# 
-# # View the results
-# print(result)
-# 
+
+library(rstatix)
+library(FSA)
+
+# evaluate differences among sites
+kruskal.test(ir_bcc ~ settlement_id, data = fig02_mm_boxplot)
+# chi-squared = 835.52, df = 8, p-value < 2.2e-16
+
+# wilcox rank sum test
+check_stats <- list(
+  sample_sizes = table(fig02_mm_boxplot$settlement_id),
+  wilcoxon = wilcox_test(ir_bcc ~ settlement_id, data=fig02_mm_boxplot),
+  effect_size = rstatix::wilcox_effsize(ir_bcc ~ settlement_id, data=fig02_mm_boxplot),
+  visual_summary = ggplot(fig02_mm_boxplot, aes(x=settlement_id, y=ir_bcc)) + geom_boxplot()
+)
+
+# Convert list components to a tidy dataframe
+results_df <- bind_cols(
+  
+  
+  # Extract wilcoxon test results
+  check_stats$wilcoxon,
+  
+  # Extract effect size
+  check_stats$effect_size %>% select(effsize, magnitude)
+)
+
+
+
+library(car)
+
+# 1. Test homogeneity of variance
+
+library(rstatix)
+fig02_mm_boxplot %>% levene_test(ir_bcc ~ settlement_id)
+
+# 2. Print results
+levene_result %>% select(statistic, p.value)
+
+
 # # Define the function to calculate confidence intervals for the median
 # calculate_notch <- function(data) {
 #   median_value <- median(data)
