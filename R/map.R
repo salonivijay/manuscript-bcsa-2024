@@ -243,53 +243,67 @@ final_map$conc_category <- cut(final_map$median_conc,
 
 final_map$aae_category <- cut(final_map$median_aae, 
                                breaks = c(-Inf, 1.29, 1.63, Inf),
-                               labels = c("ff", "mixed", "bb"))
+                               labels = c("< 1.29 (fossil-fuel-based)", 
+                                          "1.29-1.63 (mix of two)", 
+                                          "> 1.63 (biomass-based)"))
 
 # Plot the result
 pollution_map <- ggplot() +
   base_map(st_bbox(map_data_point), 
-           basemap = "google-satellite", 
+           basemap = "mapnik", 
            increase_zoom = 7) +
   geom_sf(data = final_map, aes(fill = conc_category),color = NA) +
-  scale_fill_viridis(discrete = TRUE, na.value = "0") +
-  theme_minimal(base_size = 14) +
+  scale_fill_manual(na.value = "0",
+                    na.translate = FALSE,
+                    values = c("<5"     = "#006d77",
+                               "5-10"   = "#66c2a4", 
+                               "10-15"  = "#9e4f96",
+                               "15-20"  = "#cc4c02", 
+                               ">20"    = "#a50f15"   )) +
   theme(legend.position = "right") +
-  labs(fill = "eBC concentration")
+  labs(fill = expression("eBC concentration (µg m"^-3*")")) +
+  xlab("Longitude") + ylab("Latitude") +
+  theme_map  
 
 print(pollution_map)
 
-# ggsave("figures/p_concentration_map.jpeg",
-#        plot = pollution_map,
-#        width = 8.9,
-#        height = 5,                           # Height in cm (can be adjusted as needed)
-#        dpi = 300,
-# )
+ggsave("figures/p_concentration_map_1.jpeg",
+       plot = pollution_map,
+       width = 8.9,
+       height = 5,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+)
 
 aae_map <- ggplot() +
   base_map(st_bbox(map_data_point), 
-           basemap = "google-satellite", 
-           increase_zoom = 5) +
+           basemap = "mapnik", 
+           increase_zoom = 7) +
   geom_sf(data = final_map, aes(fill = aae_category),color = NA) +
-  geom_path(data = df_study_area_mm,
-            aes(x = long,
-                y = lat,
-                group = as.factor(id),
-                color = as.factor(type_of_road)),
-            size = 0.3) +
-  scale_color_manual(
-    values = c("main_road" = "black", "non_main_road" = "white"),
-    name = "Type of road"
-  ) +
-  scale_fill_viridis(discrete = TRUE, na.value = "0") +
-  theme_minimal(base_size = 14) +
+  scale_fill_manual(na.value = "0",
+                    na.translate = FALSE,
+                     values = c("> 1.63 (biomass-based)" = "brown", 
+                                "1.29-1.63 (mix of two)" = "blue", 
+                                "< 1.29 (fossil-fuel-based)" = "black")) +
   theme(legend.position = "right") +
-  labs(fill = "eBC concentration")
+  labs(fill = "AAE470/880 (Emission source)") +
+  xlab("Longitude") + ylab("Latitude") +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank()) + 
+  theme_map  
+  # theme(legend.position = "bottom",
+  #       legend.box="horizontal",
+  #       legend.margin = margin(0.05, 0.05, 0.05, 0.05, "cm"),
+  #       legend.spacing.y = unit(0, 'cm'),
+  #       legend.key.height = unit(0.3, "cm"), 
+  #       legend.box.background = element_rect(color = "black", 
+  #                                            size = 0.1),
+  #       legend.text = element_text(margin = margin(t = 0, b = 0)))
 
 aae_map
 
-# ggsave("figures/p_aae_map.jpeg",
-#        plot = aae_map,
-#        width = 8.9,
-#        height = 5,                           # Height in cm (can be adjusted as needed)
-#        dpi = 300,
-# )
+ggsave("figures/p_aae_map.jpeg",
+       plot = aae_map,
+       width = 8.9,
+       height = 5,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+)

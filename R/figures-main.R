@@ -365,8 +365,8 @@ fig05_b_sm_wt_avg <- result_wt_avg_sm$data
 color1 <- "#E69F00"  # Orange
 color2 <- "#56B4E9"  # Light blue
 
-confidence_intervals %>% 
-  write_csv(here::here("data/processed-data/fig07_diurnal_pattern.csv"))
+# confidence_intervals %>% 
+#   write_csv(here::here("data/processed-data/fig07_diurnal_pattern.csv"))
 
 p_diurnal <- confidence_intervals |>
   ggplot(aes(x = hour)) +
@@ -492,7 +492,7 @@ check_stats <- list(
 )
 
 # Convert list components to a tidy dataframe
-results_df <- bind_cols(
+df_stats <- bind_cols(
   
   
   # Extract wilcoxon test results
@@ -500,13 +500,16 @@ results_df <- bind_cols(
   
   # Extract effect size
   check_stats$effect_size %>% select(effsize, magnitude)
-)
+) %>% 
+  mutate(effsize = round(effsize, 2))
 
+df_stats %>% 
+  write_csv(here::here("data/processed-data/tabA1_wilcox_test.csv"))
 
 
 library(car)
 
-# 1. Test homogeneity of variance
+# Test homogeneity of variance
 
 library(rstatix)
 fig02_mm_boxplot %>% levene_test(ir_bcc ~ settlement_id)
