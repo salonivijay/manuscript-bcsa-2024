@@ -7,6 +7,7 @@
 library(sf)
 library(basemapR)
 library(patchwork)
+library(ggplot2)
 
 source(here::here("R/data-smoothing.R"))
 
@@ -186,19 +187,19 @@ p_map_routes <- ggplot() +
         strip.text = element_text(size = 13),
         legend.position = "none")
 
-# ggsave("figures/p_map_routes.jpeg",
-#        plot = p_map_routes,
-#        width = 8.9,
-#        height = 6,
-#        dpi = 300
-# )
-# 
-# ggsave("figures/p_map_study.jpeg",
-#        plot = p_map_study,
-#        width = 8.9,
-#        height = 5,                           # Height in cm (can be adjusted as needed)
-#        dpi = 300,
-# )
+ggsave("figures/p_map_routes.jpeg",
+       plot = p_map_routes,
+       width = 8.9,
+       height = 6,
+       dpi = 300
+)
+
+ggsave("figures/p_map_study.jpeg",
+       plot = p_map_study,
+       width = 8.9,
+       height = 5,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+)
 
 
 library(sf)
@@ -262,17 +263,16 @@ pollution_map <- ggplot() +
                                ">20"    = "#a50f15"   )) +
   theme(legend.position = "right") +
   labs(fill = expression("eBC concentration (µg m"^-3*")")) +
-  xlab("Longitude") + ylab("Latitude") +
   theme_map  
 
 print(pollution_map)
 
-ggsave("figures/p_concentration_map_1.jpeg",
-       plot = pollution_map,
-       width = 8.9,
-       height = 5,                           # Height in cm (can be adjusted as needed)
-       dpi = 300,
-)
+# ggsave("figures/p_concentration_map_1.jpeg",
+#        plot = pollution_map,
+#        width = 8.9,
+#        height = 5,                           # Height in cm (can be adjusted as needed)
+#        dpi = 300,
+# )
 
 aae_map <- ggplot() +
   base_map(st_bbox(map_data_point), 
@@ -286,7 +286,6 @@ aae_map <- ggplot() +
                                 "< 1.29 (fossil-fuel-based)" = "black")) +
   theme(legend.position = "right") +
   labs(fill = "AAE470/880 (Emission source)") +
-  xlab("Longitude") + ylab("Latitude") +
   theme(axis.title.x = element_blank(),
         axis.title.y = element_blank()) + 
   theme_map  
@@ -301,9 +300,35 @@ aae_map <- ggplot() +
 
 aae_map
 
-ggsave("figures/p_aae_map.jpeg",
-       plot = aae_map,
-       width = 8.9,
-       height = 5,                           # Height in cm (can be adjusted as needed)
-       dpi = 300,
+# ggsave("figures/p_aae_map.jpeg",
+#        plot = aae_map,
+#        width = 8.9,
+#        height = 5,                           # Height in cm (can be adjusted as needed)
+#        dpi = 300,
+# )
+
+
+library(magick)
+library(grid)
+library(jpeg)
+library(cowplot)
+pollution_map + aae_map
+
+img_aae <- readJPEG(here::here(("figures/p_aae_map.jpeg")))  # or use readJPEG if it's a .jpg
+p_image_aae <- ggdraw() + draw_image(img) 
+
+img_pollution <- readJPEG(here::here(("figures/p_concentration_map_1.jpeg")))  # or use readJPEG if it's a .jpg
+p_image_pollution <- ggdraw() + draw_image(img_pollution) 
+
+p_image_pollution / p_image_aae +
+  plot_layout(guides = "keep")
+
+aligned_plot <- plot_grid(
+  p_image_pollution, 
+  p_image_aae, 
+  ncol = 1, 
+  align = "v",         # vertical alignment
+  axis = "l",         # align left and right axes
+  rel_widths = c(1, 1)
 )
+

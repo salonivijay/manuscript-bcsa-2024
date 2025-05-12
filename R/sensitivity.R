@@ -48,8 +48,7 @@ func_sensitivity <- function(df, threshold1, threshold2) {
       observation_count = n(),
       mean_ebc = mean(ir_bcc),
       sd_ebc = sd(ir_bcc),
-      median_ebc = median(ir_bcc),
-      .groups = "drop"
+      median_ebc = median(ir_bcc)
     ) %>%
     ungroup() %>%
     group_by(settlement_id) %>%
@@ -66,12 +65,12 @@ func_sensitivity <- function(df, threshold1, threshold2) {
     )
 }
 
-df_mm <- df_mm %>% 
+df_mm_sens <- df_mm %>% 
   filter(exp_type == "mobile_monitoring",
-         settlement_id != "Highways",
+         type_of_road == "non_main_road",
          time_of_day != "Morning")
 
-df_sm <- df_sm %>% 
+df_sm_sens <- df_sm_hourly %>% 
   filter(exp_type == "stationary_monitoring")
 
 # Function to calculate sensitivity over a range of thresholds
@@ -107,7 +106,7 @@ analyze_sensitivity <- function(results) {
 threshold1_range <- seq(1.21, 1.37, by = 0.02)
 threshold2_range <- seq(1.55, 1.71, by = 0.02)
 
-sensitivity_results <- test_sensitivity(df_mm, threshold1_range, threshold2_range)
+sensitivity_results <- test_sensitivity(df_mm_sens, threshold1_range, threshold2_range)
 sensitivity_summary <- analyze_sensitivity(sensitivity_results)
 
 
@@ -170,7 +169,7 @@ p_sensitivity_mm <- ggplot(fig04_mm_sensitivity, aes(x = threshold1, y = thresho
   geom_vline(xintercept = 1.29, linetype = "dashed", color = "black") +
   geom_hline(yintercept = 1.63, linetype = "dashed", color = "black")
 
-sensitivity_results_sm <- test_sensitivity(df_sm, threshold1_range, threshold2_range)
+sensitivity_results_sm <- test_sensitivity(df_sm_sens, threshold1_range, threshold2_range)
 sensitivity_summary_sm <- analyze_sensitivity(sensitivity_results_sm)
 
 # Reshape the data for plotting
@@ -255,3 +254,9 @@ ggsave("figures/p_sensitivity_sm.jpeg",
        units = "cm") # Units for width and height
 
 # ###
+
+check_mm <- sensitivity_summary_sm %>%
+  filter(threshold1 == "1.37" &
+         threshold2 == "1.55") 
+  
+  

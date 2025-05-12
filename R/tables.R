@@ -187,5 +187,5 @@ table_sc_r2_final$Phase <- recode(table_sc_r2_final$Phase,
                                   pre_stationary = 'Pre stationary monitoring',
                                   post_stationary_3 = 'Post stationary monitoring')
 
-table_sc_r2_final %>% 
-  write_csv(here::here("data/processed-data/tab03_sc_r2.csv"))
+# table_sc_r2_final %>% 
+#   write_csv(here::here("data/processed-data/tab03_sc_r2.csv"))

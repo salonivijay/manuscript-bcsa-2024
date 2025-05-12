@@ -37,6 +37,9 @@ load(here::here("data/raw-data/df_met.rda"))
 # But the data can be directly requested from their website:
 # https://tahmo.org/climate-data/
 
+df_met <- df_met %>% 
+filter(!id %in% c(1:8, 17:24,65:72)) 
+
 # summary table of meteorology during different experiments
 df_avg_met <- df_met |> 
   select(exp_type, 
@@ -47,9 +50,11 @@ df_avg_met <- df_met |>
          winddirection) |> 
   drop_na() |> 
   group_by(exp_type) |> 
-  summarize(mean_temp = mean(`temperature (degrees Celsius)`),
+  summarize(count = n(),
+            mean_temp = mean(`temperature (degrees Celsius)`),
             sd_temp = sd(`temperature (degrees Celsius)`),
             mean_windspeed = mean(windspeed),
+            median_windspeed = median(windspeed),
             sd_windspeed = sd(windspeed),
             mean_rain = mean(`precipitation (mm)`),
             sd_rain = sd(`precipitation (mm)`),
@@ -91,6 +96,9 @@ wind_df_met <- df_met %>%
 #remove values during sensor collocation (remove 420 monitor - random)
 filter(!id %in% c(17:24,65:72))  
 
+wind_df_met %>% 
+  summarise(max_windspeed = max(windspeed))
+
 wind_df_mm <- df_mm_road_type %>%
   filter(exp_type == "mobile_monitoring", !id %in% 1:8) %>%
   mutate(date_time = floor_date(date_time, "5 minutes")) %>%
@@ -119,12 +127,19 @@ ggplot(aes(x = windspeed, y = ir_bcc)) +
 
 cor.test(joined_df$windspeed, joined_df$ir_bcc, method = "spearman")
 
-windRose(wind_df_met, 
+p_app_windrose_mobile <- windRose(wind_df_met, 
          ws = "windspeed", 
          wd = "winddirection") 
 
 ggsave("figures/appendix/fig-S01.jpeg", 
        plot = p_app_boxplot_windspeed_mobile,  # your plot object
+       width = 8.9,                            # Width in cm for single-column (3.5 inches)
+       height = 8.9,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+       units = "cm") # Units for width and height
+
+ggsave("figures/appendix/fig-S01-2.jpeg", 
+       plot = p_app_windrose_mobile,  # your plot object
        width = 8.9,                            # Width in cm for single-column (3.5 inches)
        height = 8.9,                           # Height in cm (can be adjusted as needed)
        dpi = 300,
@@ -142,6 +157,8 @@ p_app_wr_stationary <- windRose(df_met_stationary,
 wd_sm <- as_tibble((p_app_wr_stationary[["data"]][["freqs"]]), rownames = "degrees") |> 
   filter(value == max(value)) |> 
   pull(degrees)
+
+p_app_wr_stationary
 
 # Figure S3: eBC v/s wind speed during stationary monitoring --------
 

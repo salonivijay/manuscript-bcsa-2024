@@ -40,13 +40,9 @@ df_mm_highway_overview <- df_mm |>
   mutate(settlement_id = "Highways") |> 
   mutate(type_of_settlement = "Highways")
 
-df_pm_internal <- df_pm |> 
-  mutate(day_type = "weekday internal")
-
 df_monitoring <- df_mm |> 
   filter(!time_of_day %in% "Morning",
          type_of_road == "non_main_road") |> 
-  bind_rows(df_pm_internal) |> 
   bind_rows(df_mm_highway_overview) |>
   bind_rows(df_sm_hourly) |> 
   mutate(ir_bcc = ir_bcc/1000) |>
@@ -70,6 +66,9 @@ df_aae_overview <- df_monitoring |>
          pct_obs = round(observation_count / total_obs * 100, 1)) |>
   ungroup() 
 
+df_summary_mobile <- df_aae_overview %>% 
+  filter(exp_type == "mobile_monitoring")
+
 df_aae_range <- df_monitoring |>
   mutate(aae_range = case_when(
     aae_blue_ir <= 1.29 ~ "ff",
@@ -79,6 +78,12 @@ df_aae_range <- df_monitoring |>
 
 df_aae_range_sm <- df_aae_range |>
   filter(exp_type == "stationary_monitoring")
+
+df_sm_hourly %>% 
+  group_by(settlement_id) %>% 
+  summarise(mean_ir = mean(ir_bcc),
+            median_ir = median(ir_bcc),
+            sd_ir = sd(ir_bcc))
 
 # diurnal pattern 
 
@@ -94,7 +99,7 @@ confidence_intervals <- df_sm_hourly %>%
 
 # Figure 2: Notched box plots from mobile monitoring data -----------------
 
-settlements_vec <- c("Ndirande", "Chirimba", "Kacheri", "Bangwe",
+settlements_vec <- c("Ndirande", "Chirimba", "Kachere", "Bangwe",
                      "Sunnyside", "Naperi", "Nyambadwe", "Namiwawa", "Highways")
 
 settlement_types_order <- df_monitoring |>
@@ -125,6 +130,13 @@ fig02_mm_boxplot <- df_monitoring |>
                                 levels = settlement_types_order)
   ) 
 
+df_mm_summary <- df_monitoring %>% 
+  filter(exp_type == "mobile_monitoring") %>% 
+  group_by(settlement_id) %>% 
+  summarise(mean_ir = mean(ir_bcc),
+            median_ir = median(ir_bcc))
+  
+
 # fig02_mm_boxplot %>% 
 # write_csv(here::here("data/processed-data/fig02_mm_boxplot.csv"))
 
@@ -134,7 +146,7 @@ p_boxplot_mm <- fig02_mm_boxplot |>
              y = ir_bcc, 
              fill = type_of_settlement)) +
   geom_boxplot(position = position_dodge(width = 1),
-               #outlier.shape = NA,
+               outlier.shape = NA,
                notch = TRUE,
                width = 0.5) +
   stat_summary(fun.y=mean, geom="point", 
@@ -153,8 +165,7 @@ p_boxplot_mm <- fig02_mm_boxplot |>
   theme +
   theme(axis.text.x = 
           element_text(angle = 45, 
-                       hjust=1),
-        panel.grid.minor.y = element_line(color = "lightblue", size = 0.25, linetype = "dotted"))
+                       hjust=1))
 
 
 p_boxplot_mm
@@ -375,16 +386,17 @@ p_diurnal <- confidence_intervals |>
                   ymax = upper_ci_ir),
               fill = color1,
               alpha = 0.3) +
-  geom_line(aes(y = mean*3.5), color = color2) +
-  geom_ribbon(aes(ymin = lower_ci*3.5, ymax = upper_ci*3.5),
+  geom_line(aes(y = (mean*8-6)), color = color2) +
+  geom_ribbon(aes(ymin = (lower_ci*8-6), ymax = (upper_ci*8-6)),
               fill = color2, alpha = 0.3) +
   scale_y_continuous(
     name = expression("eBC concentration (µg m"^-3*")"),
-    sec.axis = sec_axis(~./3.500, 
+    sec.axis = sec_axis(~(.+6)/8, 
                         name="AAE values (470/880 nm)",
-                        breaks = seq(0, 3, by = 0.5)),
+                        breaks = seq(1, 2, by = 0.5)),
     breaks = seq(0, 12, by = 2)) +
   scale_x_continuous(breaks = seq(0, 24, by = 4)) +
+  labs(x = "Hour") +
   facet_wrap(~settlement_id) +
   theme(legend.position = "none",
         axis.line.y.left = element_line(color = color1),
@@ -401,52 +413,52 @@ p_diurnal <- confidence_intervals |>
 # Save figures ------------------------------------------------------------
 
 # Save Figure 7
-# ggsave("figures/p_boxplot_mm.jpeg", 
-#        plot = p_boxplot_mm,  # your plot object
-#        width = 12.7,                            # Width in cm for single-column (3.5 inches)
-#        height = 8,                           # Height in cm (can be adjusted as needed)
-#        dpi = 300,
-#        units = "cm") # Units for width and height
-# 
-# ggsave(
-#   filename = "figures/p_mm_sa.jpeg", 
-#   plot = p_mm_sa,                        # The ggplot object
-#   width = 12.7,                            # Width in cm for single-column (3.5 inches)
-#   height = 7,                           # Height in cm (can be adjusted as needed)
-#   dpi = 300,
-#   units = "cm", # Units for width and height
-# )
+ggsave("figures/p_boxplot_mm.jpeg",
+       plot = p_boxplot_mm,  # your plot object
+       width = 12.7,                            # Width in cm for single-column (3.5 inches)
+       height = 8,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+       units = "cm") # Units for width and height
 
-# ggsave("figures/p_wt_avg_mm.jpeg", 
-#        plot = p_wt_avg_mm,  # your plot object
-#        width = 12.7,                            # Width in cm for single-column (3.5 inches)
-#        height = 5,                           # Height in cm (can be adjusted as needed)
-#        dpi = 300,
-#        units = "cm") # Units for width and height
-# 
-# ggsave("figures/p_sm_sa_cluster.jpeg", 
-#        plot = p_sm_sa_cluster,  # your plot object
-#        width = 8.9,                            # Width in cm for single-column (3.5 inches)
-#        height = 6,                           # Height in cm (can be adjusted as needed)
-#        dpi = 300,
-#        units = "cm") # Units for width and height
-# 
-# 
-# ggsave("figures/p_wt_avg_sm.jpeg", 
-#        plot = p_wt_avg_sm,  # your plot object
-#        width = 8.9,                            # Width in cm for single-column (3.5 inches)
-#        height = 5,                           # Height in cm (can be adjusted as needed)
-#        dpi = 300,
-#        units = "cm") # Units for width and height
-# 
-# 
-# # Save Figure 7
-# ggsave("figures/p_diurnal.jpeg", 
-#        plot = p_diurnal,  # your plot object
-#        width = 8.9,                            # Width in cm for single-column (3.5 inches)
-#        height = 5,                           # Height in cm (can be adjusted as needed)
-#        dpi = 300,
-#        units = "cm") # Units for width and height
+ggsave(
+  filename = "figures/p_mm_sa.jpeg",
+  plot = p_mm_sa,                        # The ggplot object
+  width = 12.7,                            # Width in cm for single-column (3.5 inches)
+  height = 7,                           # Height in cm (can be adjusted as needed)
+  dpi = 300,
+  units = "cm", # Units for width and height
+)
+
+ggsave("figures/p_wt_avg_mm.jpeg",
+       plot = p_wt_avg_mm,  # your plot object
+       width = 12.7,                            # Width in cm for single-column (3.5 inches)
+       height = 5,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+       units = "cm") # Units for width and height
+
+ggsave("figures/p_sm_sa_cluster.jpeg",
+       plot = p_sm_sa_cluster,  # your plot object
+       width = 8.9,                            # Width in cm for single-column (3.5 inches)
+       height = 6,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+       units = "cm") # Units for width and height
+
+
+ggsave("figures/p_wt_avg_sm.jpeg",
+       plot = p_wt_avg_sm,  # your plot object
+       width = 8.9,                            # Width in cm for single-column (3.5 inches)
+       height = 5,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+       units = "cm") # Units for width and height
+
+
+# Save Figure 7
+ggsave("figures/p_diurnal.jpeg",
+       plot = p_diurnal,  # your plot object
+       width = 8.9,                            # Width in cm for single-column (3.5 inches)
+       height = 5,                           # Height in cm (can be adjusted as needed)
+       dpi = 300,
+       units = "cm") # Units for width and height
 
 # statistical difference --------------------------------------------------
 
@@ -503,20 +515,25 @@ df_stats <- bind_cols(
 ) %>% 
   mutate(effsize = round(effsize, 2))
 
-df_stats %>% 
-  write_csv(here::here("data/processed-data/tabA1_wilcox_test.csv"))
+# df_stats %>% 
+#   write_csv(here::here("data/processed-data/tabA1_wilcox_test.csv"))
 
+# Filter to keep only (date, hour) groups with at least 2 settlements
+filtered_data <- df_sm_hourly %>%
+  group_by(date, hour) %>%
+  filter(n_distinct(settlement_id) >= 2) %>%
+  ungroup()
 
-library(car)
+# Run Wilcoxon test for each (date, hour)
+pairwise_results <- filtered_data %>%
+  group_by(date, hour) %>%
+  wilcox_test(
+    formula = ir_bcc ~ settlement_id,
+    p.adjust.method = "BH"
+  )
 
-# Test homogeneity of variance
-
-library(rstatix)
-fig02_mm_boxplot %>% levene_test(ir_bcc ~ settlement_id)
-
-# 2. Print results
-levene_result %>% select(statistic, p.value)
-
+# View the results
+pairwise_results
 
 # # Define the function to calculate confidence intervals for the median
 # calculate_notch <- function(data) {

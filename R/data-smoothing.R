@@ -111,15 +111,14 @@ for (i in (unique(df_smooth$id))) {
 
 df_smooth <- bind_rows(list_df) |> 
   mutate(aae_uv_ir = -log(uv_babs/ir_babs)/log((parameters$wavelength[1])/(parameters$wavelength[5])),
-         aae_blue_ir = -log(blue_babs/ir_babs)/log((parameters$wavelength[2])/(parameters$wavelength[5])))
+         aae_blue_ir = -log(blue_babs/ir_babs)/log((parameters$wavelength[2])/(parameters$wavelength[5]))) %>% 
+  mutate(settlement_id = recode(settlement_id, "Kacheri" = "Kachere")) 
 
 ### again divide each dataframe
 
 df_collocation <- df_smooth |>
-  filter(exp_type == "sensor_collocation")
-
-df_aae <- df_smooth |>
-  filter(exp_type %in% c("waste_burning", "cooking", "vehicles"))
+  filter(exp_type == "sensor_collocation") %>% 
+  filter(ir_bcc > 0) 
 
 df_sm <- df_smooth |>
   filter(exp_type == "stationary_monitoring")
@@ -129,11 +128,12 @@ df_sm_hourly <- df_sm |>
   group_by(hour, date, settlement_id, day_type, exp_type) |>
   summarise(across(c(ir_bcc, uv_bcc, ir_babs, uv_babs, blue_babs), mean)) |>
   mutate(aae_uv_ir = -log(uv_babs/ir_babs)/log((parameters$wavelength[1])/(parameters$wavelength[5])),
-         aae_blue_ir = -log(blue_babs/ir_babs)/log((parameters$wavelength[2])/(parameters$wavelength[5]))) 
+         aae_blue_ir = -log(blue_babs/ir_babs)/log((parameters$wavelength[2])/(parameters$wavelength[5]))) %>% 
+  filter(ir_bcc > 0) 
 
 df_mm <- df_smooth |>
-  filter(exp_type == "mobile_monitoring")
+  filter(exp_type == "mobile_monitoring",
+         !time_of_day %in% "Morning") %>% 
+  filter(ir_bcc > 0) 
 
-df_pm <- df_smooth |>
-  filter(exp_type == "personal_monitoring")
 
