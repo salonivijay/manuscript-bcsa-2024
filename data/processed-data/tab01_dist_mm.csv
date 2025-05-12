@@ -2,8 +2,8 @@ Monitoring type,Location,type_of_road,Average distance [km],SD of distance [km]
 Mobile monitoring,Bangwe,main_road,0.31,0.12
 Mobile monitoring,Bangwe,non_main_road,3.63,0.59
 Mobile monitoring,Chirimba,non_main_road,1.73,0.31
-Mobile monitoring,Kacheri,main_road,1.8,0.49
-Mobile monitoring,Kacheri,non_main_road,3.43,0.06
+Mobile monitoring,Kachere,main_road,1.8,0.49
+Mobile monitoring,Kachere,non_main_road,3.43,0.06
 Mobile monitoring,Namiwawa,non_main_road,3.74,0.19
 Mobile monitoring,Naperi,non_main_road,2.65,0.15
 Mobile monitoring,Ndirande,main_road,1.55,0.3
