@@ -68,7 +68,8 @@ func_sensitivity <- function(df, threshold1, threshold2) {
 df_mm_sens <- df_mm %>% 
   filter(exp_type == "mobile_monitoring",
          type_of_road == "non_main_road",
-         time_of_day != "Morning")
+         time_of_day != "Morning",
+         )
 
 df_sm_sens <- df_sm_hourly %>% 
   filter(exp_type == "stationary_monitoring")
@@ -201,11 +202,11 @@ fig06_sm_sensitivity <- sensitivity_long_sm %>%
 
 # write csv files for data behind the figures -----------------------------
 
-fig04_mm_sensitivity %>% 
-  write_csv(here::here("data/processed-data/fig04_mm_sensitivity.csv"))
-
-fig06_sm_sensitivity %>% 
-  write_csv(here::here("data/processed-data/fig06_sm_sensitivity.csv"))
+# fig04_mm_sensitivity %>% 
+#   write_csv(here::here("data/processed-data/fig04_mm_sensitivity.csv"))
+# 
+# fig06_sm_sensitivity %>% 
+#   write_csv(here::here("data/processed-data/fig06_sm_sensitivity.csv"))
 
 # Create heat maps
 p_sensitivity_sm <- ggplot(fig06_sm_sensitivity, 
@@ -238,20 +239,20 @@ p_sensitivity_sm <- ggplot(fig06_sm_sensitivity,
   geom_vline(xintercept = 1.29, linetype = "dashed", color = "black") +
   geom_hline(yintercept = 1.63, linetype = "dashed", color = "black")
 
-
-ggsave("figures/p_sensitivity_mm.jpeg", 
-       plot = p_sensitivity_mm,  # your plot object
-       width = 12.7,                            # Width in cm for single-column (3.5 inches)
-       height = 16,                           # Height in cm (can be adjusted as needed)
-       dpi = 300,
-       units = "cm") # Units for width and height
-
-ggsave("figures/p_sensitivity_sm.jpeg", 
-       plot = p_sensitivity_sm,  # your plot object
-       width = 12.7,                            # Width in cm for single-column (3.5 inches)
-       height = 10,                           # Height in cm (can be adjusted as needed)
-       dpi = 300,
-       units = "cm") # Units for width and height
+# 
+# ggsave("figures/p_sensitivity_mm.jpeg", 
+#        plot = p_sensitivity_mm,  # your plot object
+#        width = 12.7,                            # Width in cm for single-column (3.5 inches)
+#        height = 16,                           # Height in cm (can be adjusted as needed)
+#        dpi = 300,
+#        units = "cm") # Units for width and height
+# 
+# ggsave("figures/p_sensitivity_sm.jpeg", 
+#        plot = p_sensitivity_sm,  # your plot object
+#        width = 12.7,                            # Width in cm for single-column (3.5 inches)
+#        height = 10,                           # Height in cm (can be adjusted as needed)
+#        dpi = 300,
+#        units = "cm") # Units for width and height
 
 # ###
 

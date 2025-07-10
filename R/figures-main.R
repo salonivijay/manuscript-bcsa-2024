@@ -415,8 +415,8 @@ p_diurnal <- confidence_intervals |>
 # Save Figure 7
 ggsave("figures/p_boxplot_mm.jpeg",
        plot = p_boxplot_mm,  # your plot object
-       width = 12.7,                            # Width in cm for single-column (3.5 inches)
-       height = 8,                           # Height in cm (can be adjusted as needed)
+       width = 8.5,                            # Width in cm for single-column (3.5 inches)
+       height = 5.5,                           # Height in cm (can be adjusted as needed)
        dpi = 300,
        units = "cm") # Units for width and height
 
