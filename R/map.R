@@ -8,6 +8,7 @@ library(sf)
 library(basemapR)
 library(patchwork)
 library(ggplot2)
+library(ggnewscale)
 
 source(here::here("R/data-smoothing.R"))
 
@@ -73,6 +74,8 @@ df_study_area <- df_mm_road_type |>
 df_study_area_mm <- df_study_area |> 
   filter(exp_type %in% c("mobile_monitoring"))
 
+write_csv(df_study_area_mm, file = "data/mm_routes.csv")
+
 df_bound_box_min <- tibble(lat = -15.50, long = 34.90)
 df_bound_box_max <- tibble(lat = -16.00, long = 35.13)
 
@@ -108,12 +111,15 @@ hill_shape <- 24  # Filled triangle
 map_blantyre <- ggplot() +
   base_map(st_bbox(map_data_point),
            basemap = "google-satellite",
-           increase_zoom = 3) +
+           increase_zoom = 7) +
   geom_sf(data = malawi_shp_adm2_4326 %>% 
             filter(ADM2_EN == "Blantyre City"), 
           alpha = 0,
           color = "white",
           linewidth = 1) +
+  geom_sf(data = blantyre_shp_adm3_4326,
+          aes(fill = NAME, color = NAME, alpha = 0.8)) +
+  new_scale_color() +  
   geom_path(data = df_study_area_mm,
             aes(x = long,
                 y = lat,
@@ -135,12 +141,11 @@ map_blantyre <- ggplot() +
              stroke=1.5) +
   geom_point(data = df_hill_coords,
              aes(x = long,
-                 y = lat,
-                 fill = hills),
+                 y = lat),
              size = 5,
              color = "white",
              shape = hill_shape) +
-  scale_fill_manual(name = "Hills", values = hill_colors) +
+  #scale_fill_manual(name = "Hills", values = hill_colors) +
   scale_shape_manual(name = "Stationary monitoring",
                      values = c(23, 22)) +
   scale_color_manual(name = "Mobile route", values = cb_palette) +
@@ -165,10 +170,11 @@ map_blantyre <- ggplot() +
 
 p_map_study <- map_malawi + map_blantyre
 
+
 p_map_routes <- ggplot() +
   base_map(st_bbox(map_data_point), 
            basemap = "google-satellite", 
-           increase_zoom = 7) +
+           increase_zoom = 8) +
   geom_path(data = df_study_area_mm,
             aes(x = long,
                 y = lat,
@@ -177,7 +183,7 @@ p_map_routes <- ggplot() +
             size = 1.5) +
   scale_color_manual(name = "Mobile route", values = cb_palette) +
   xlab("Longitude") + ylab("Latitude") +
-  facet_wrap(~settlement_id, scales = "free", nrow = 2) +
+  facet_wrap(~settlement_id, scales = "free", ncol = 2) +
   theme(panel.border = element_rect(color = "black", size = 1, linetype = "solid", fill = alpha("black", 0))) +
   theme(axis.title.x = element_blank(),
         axis.title.y = element_blank(), 
@@ -187,13 +193,15 @@ p_map_routes <- ggplot() +
         strip.text = element_text(size = 13),
         legend.position = "none")
 
+p_map_routes
+
 ggsave("figures/p_map_routes.jpeg",
        plot = p_map_routes,
-       width = 8.9,
-       height = 6,
+       width = 6,
+       height = 12,
        dpi = 300
 )
-
+# 
 ggsave("figures/p_map_study.jpeg",
        plot = p_map_study,
        width = 8.9,
@@ -331,4 +339,159 @@ aligned_plot <- plot_grid(
   axis = "l",         # align left and right axes
   rel_widths = c(1, 1)
 )
+
+library(sf)
+library(dplyr)
+library(elevatr)
+library(terra)
+
+df <- df_study_area_mm
+
+# Convert to sf object
+df_sf <- st_as_sf(df,
+                  coords = c("long", "lat"), 
+                  crs = 4326)
+
+# Split by settlement_id and create a bounding box for each group
+settlement_list <- split(df_sf, df_sf$settlement_id)
+
+results <- list()
+
+for (id in names(settlement_list)) {
+  group <- settlement_list[[id]]
+  
+  # Create a bounding box for this group
+  bbox <- st_bbox(group)
+  bbox_polygon <- st_as_sfc(bbox) %>% st_sf()
+  bbox_polygon$settlement_id <- id
+  
+  # Download elevation raster for the bounding box
+  elev_raster <- tryCatch({
+    get_elev_raster(bbox_polygon, z = 9, clip = "bbox")
+  }, error = function(e) {
+    message("Error downloading elevation for settlement_id ", id, ": ", e$message)
+    NULL
+  })
+  
+  if (!is.null(elev_raster)) {
+    elev_terra <- rast(elev_raster)
+    box_vect <- vect(bbox_polygon)
+    elev_masked <- mask(elev_terra, box_vect)
+    
+    # Extract elevation values and compute stats
+    elev_values <- values(elev_masked)
+    elev_values <- elev_values[!is.na(elev_values)]
+    
+    results[[id]] <- data.frame(
+      settlement_id = id,
+      max_elev = max(elev_values, na.rm = TRUE),
+      min_elev = min(elev_values, na.rm = TRUE),
+      avg_elev = mean(elev_values, na.rm = TRUE)
+    )
+  }
+}
+
+# Combine results for all settlements
+results_df <- do.call(rbind, results)
+print(results_df)
+
+
+
+
+# Get elevation for each point
+elevation_data <- get_elev_point(map_data_hill, src = "aws")
+
+# View the result
+print(elevation_data)
+
+# malawi_shp_adm3 <- read_sf("data/raw-data/mwi_adm_nso_20181016_shp/mwi_admbnda_adm3_nso_20181016.shp") 
+# 
+# malawi_shp_adm3_4326 <- st_transform(malawi_shp_adm3, crs = 4326)
+# # 
+# blantyre_shp_adm3_4326 <- malawi_shp_adm3_4326 %>%
+#   filter(ADM2_EN %in% c("Blantyre City", "Blantyre"))
+# 
+# Load and transform your data
+malawi_shp_adm3 <- read_sf("data/raw-data/mwi_adm_nso_20181016_shp/Blantyre_Chiukepo/Blantyre City Residential_Area.shp")
+malawi_shp_adm3_4326 <- st_transform(malawi_shp_adm3, crs = 4326)
+
+# Filter your areas of interest
+blantyre_shp_filtered <- malawi_shp_adm3_4326 %>% 
+  filter(NAME %in% c("Sunnyside", "Nyambadwe", "Namiwawa", "Naperi", 
+                     "Kachere", "Chirimba", "Bangwe", "Ndirande"))
+
+# Repair geometries (optional but recommended)
+blantyre_shp_filtered <- st_make_valid(blantyre_shp_filtered)
+
+# Group by NAME and summarize
+blantyre_shp_fixed <- blantyre_shp_filtered %>%
+  st_make_valid()
+
+blantyre_shp_adm3_4326 <- blantyre_shp_fixed %>%
+  group_by(NAME) %>%
+  summarise(
+    AREA = sum(AREA, na.rm = TRUE),
+    HOUSE_CNT = sum(HOUSE_CNT, na.rm = TRUE),
+    RES_HA = mean(RES_HA, na.rm = TRUE),
+    HSE_HA = mean(HSE_HA, na.rm = TRUE),
+    geometry = st_union((geometry))
+  ) %>%
+  ungroup()
+
+# 1. Load required libraries
+library(sf)
+library(dplyr)
+library(purrr)
+library(tibble)
+
+# 2. Read your shapefile (replace path if needed)
+# blantyre_shp_filtered <- st_read("path/to/your/blantyre_shapefile.shp")
+
+# 3. Fix geometries using st_buffer(., 0) to correct invalid shapes
+fix_geometry <- function(geom) {
+  st_buffer(geom, 0)
+}
+
+# 4. Apply geometry fix before merging
+blantyre_shp_fixed <- blantyre_shp_filtered %>%
+  mutate(geometry = fix_geometry(geometry))
+
+# 5. Group by NAME and dissolve polygons per area
+blantyre_shp_adm3_list <- blantyre_shp_fixed %>%
+  split(.$NAME) %>%
+  map_df(function(group) {
+    tryCatch({
+      # Fix geometry again just in case
+      group_fixed <- group %>%
+        mutate(geometry = st_buffer(geometry, 0))
+      
+      # Merge polygons in this group
+      union_geom <- st_union(st_combine(group_fixed$geometry))
+      
+      # Return a single merged feature
+      tibble(
+        NAME = unique(group$NAME),
+        AREA = sum(group$AREA, na.rm = TRUE),
+        HOUSE_CNT = sum(group$HOUSE_CNT, na.rm = TRUE),
+        RES_HA = mean(group$RES_HA, na.rm = TRUE),
+        HSE_HA = mean(group$HSE_HA, na.rm = TRUE),
+        geometry = union_geom
+      )
+    }, error = function(e) {
+      message("❌ Skipping ", unique(group$NAME), ": ", e$message)
+      return(NULL)
+    })
+  })
+
+# 6. Convert to sf object
+blantyre_shp_adm3_4326 <- st_as_sf(blantyre_shp_adm3_list)
+
+# 7. Optional: Check how many polygon parts each area has
+blantyre_shp_adm3_4326$num_parts <- map_int(
+  blantyre_shp_adm3_4326$geometry,
+  ~length(st_cast(.x, "POLYGON"))
+)
+
+# 8. Plot to verify
+plot(blantyre_shp_adm3_4326["NAME"])
 
